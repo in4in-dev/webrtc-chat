@@ -41,7 +41,7 @@ exports.ChatRelationFactory = {
             }
         }, {
             sequelize: db,
-            modelName: 'chat',
+            modelName: 'chat_relation',
             timestamps: true,
             indexes: [
                 {

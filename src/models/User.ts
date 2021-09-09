@@ -8,6 +8,9 @@ import {MessageModel} from "./Message";
 
 export class UserModel extends Model{
     public id! : number;
+    public name! : string;
+    public avatar_file_id! : string | null;
+
     public chats? : ChatModel[];
     public getChats! : BelongsToManyGetAssociationsMixin<ChatModel>;
 
@@ -24,6 +27,14 @@ export let UserFactory : Factory = {
                 primaryKey: true,
                 autoIncrement: true,
                 type: DataTypes.BIGINT
+            },
+            name : {
+                allowNull : false,
+                type : DataTypes.STRING
+            },
+            avatar_file_id : {
+                allowNull : true,
+                type : DataTypes.BIGINT
             }
         }, {
             sequelize : db,
@@ -40,6 +51,10 @@ export let UserFactory : Factory = {
         UserModel.belongsToMany(ChatModel, {
             through : ChatRelationModel
         });
+
+        UserModel.hasOne(FileModel, {
+            foreignKey : 'avatar_file_id'
+        })
 
     }
 

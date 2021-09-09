@@ -3,9 +3,10 @@
 
 export default {
 
-    NEW_CHAT : 'on.chat.new',
     DELETE_CHAT : 'on.chat.delete',
     CLEAR_CHAT : 'on.chat.clear',
+    HISTORY_LOADED : 'on.chat.history',
+    READ_CHAT : 'on.chat.read',
 
     NEW_MESSAGE : 'on.message.new',
     DELETE_MESSAGE : 'on.message.delete',

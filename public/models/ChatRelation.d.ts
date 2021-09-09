@@ -9,7 +9,7 @@ export declare class ChatRelationModel extends Model {
     getUser: BelongsToGetAssociationMixin<UserModel>;
     chat_id: number;
     chat?: ChatModel;
-    getChat: BelongsToGetAssociationMixin<UserModel>;
+    getChat: BelongsToGetAssociationMixin<ChatModel>;
     clear_time: Date | null;
     is_deleted: boolean;
     unread_count: number;

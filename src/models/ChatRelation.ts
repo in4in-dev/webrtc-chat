@@ -13,7 +13,7 @@ export class ChatRelationModel extends Model {
 
     public chat_id! : number;
     public chat? : ChatModel;
-    public getChat! : BelongsToGetAssociationMixin<UserModel>;
+    public getChat! : BelongsToGetAssociationMixin<ChatModel>;
 
     public clear_time! : Date | null;
     public is_deleted! : boolean;
@@ -59,7 +59,7 @@ export let ChatRelationFactory : Factory = {
             }
         }, {
             sequelize : db,
-            modelName : 'chat',
+            modelName : 'chat_relation',
             timestamps : true,
             indexes : [
                 {

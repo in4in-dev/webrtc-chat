@@ -11,9 +11,9 @@ export declare class MessageModel extends Model {
     user_id: number;
     user?: UserModel;
     getUser: BelongsToGetAssociationMixin<UserModel>;
-    file_id: number | null;
-    file?: File | null;
-    getFile: HasOneGetAssociationMixin<File>;
+    attachment_id: number | null;
+    attachment?: File | null;
+    getAttachment: HasOneGetAssociationMixin<File>;
     createdAt: Date;
     updatedAt: Date;
 }

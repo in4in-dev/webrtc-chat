@@ -5,9 +5,9 @@ const {connectDatabase} = require("../public/db");
 
 	let db = connectDatabase();
 
-	let user = await User.findByPk(1, {
+	let users = await User.findAll({
 		include : Chat
 	});
 
-	console.log(user.createdAt);
+	console.log(users[0].chats);
 }());

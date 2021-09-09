@@ -3,8 +3,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.MessageFactory = exports.MessageModel = void 0;
 const sequelize_1 = require("sequelize");
 const Chat_1 = require("./Chat");
-const File_1 = require("./File");
 const User_1 = require("./User");
+const Attachment_1 = require("./Attachment");
 class MessageModel extends sequelize_1.Model {
 }
 exports.MessageModel = MessageModel;
@@ -28,7 +28,7 @@ exports.MessageFactory = {
                 allowNull: false,
                 type: sequelize_1.DataTypes.BIGINT
             },
-            file_id: {
+            attachment_id: {
                 allowNull: true,
                 type: sequelize_1.DataTypes.BIGINT
             }
@@ -38,7 +38,8 @@ exports.MessageFactory = {
             timestamps: true,
             indexes: [
                 { fields: ['user_id'] },
-                { fields: ['chat_id'] }
+                { fields: ['chat_id'] },
+                { fields: ['createdAt'] }
             ]
         });
         return MessageModel;
@@ -46,6 +47,6 @@ exports.MessageFactory = {
     relations() {
         MessageModel.belongsTo(Chat_1.ChatModel);
         MessageModel.belongsTo(User_1.UserModel);
-        MessageModel.hasOne(File_1.FileModel);
+        MessageModel.hasOne(Attachment_1.AttachmentModel);
     }
 };

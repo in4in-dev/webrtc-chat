@@ -3,6 +3,7 @@ import {ChatModel} from "./Chat";
 import {FileModel} from "./File";
 import {UserModel} from "./User";
 import {Factory} from "../module/Factory";
+import {AttachmentModel} from "./Attachment";
 
 export class MessageModel extends Model{
     public id! : number;
@@ -16,9 +17,9 @@ export class MessageModel extends Model{
     public user? : UserModel;
     public getUser! : BelongsToGetAssociationMixin<UserModel>;
 
-    public file_id! : number | null;
-    public file? : File | null;
-    public getFile! : HasOneGetAssociationMixin<File>;
+    public attachment_id! : number | null;
+    public attachment? : File | null;
+    public getAttachment! : HasOneGetAssociationMixin<File>;
 
     public createdAt! : Date;
     public updatedAt! : Date;
@@ -47,7 +48,7 @@ export let MessageFactory : Factory = {
                 allowNull : false,
                 type : DataTypes.BIGINT
             },
-            file_id : {
+            attachment_id : {
                 allowNull : true,
                 type : DataTypes.BIGINT
             }
@@ -57,7 +58,8 @@ export let MessageFactory : Factory = {
             timestamps : true,
             indexes : [
                 { fields : ['user_id'] },
-                { fields : ['chat_id'] }
+                { fields : ['chat_id'] },
+                { fields : ['createdAt'] }
             ]
         });
 
@@ -69,7 +71,7 @@ export let MessageFactory : Factory = {
 
         MessageModel.belongsTo(ChatModel);
         MessageModel.belongsTo(UserModel);
-        MessageModel.hasOne(FileModel);
+        MessageModel.hasOne(AttachmentModel);
 
     }
 

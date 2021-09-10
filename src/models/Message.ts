@@ -22,8 +22,8 @@ export class MessageModel extends Model{
     public attachment? : File | null;
     public getAttachment! : HasOneGetAssociationMixin<File>;
 
-    public createdAt! : Date;
-    public updatedAt! : Date;
+    public created_at! : Date;
+    public updated_at! : Date;
 
 }
 
@@ -56,11 +56,12 @@ export let MessageFactory : Factory = {
         }, {
             sequelize : db,
             modelName: 'message',
+            underscored : true,
             timestamps : true,
             indexes : [
                 { fields : ['user_id'] },
                 { fields : ['room_id'] },
-                { fields : ['createdAt'] }
+                { fields : ['created_at'] }
             ]
         });
 

@@ -16,8 +16,8 @@ export class AttachmentModel extends Model{
     public room? : RoomModel;
     public getRoom! : BelongsToGetAssociationMixin<RoomModel>;
 
-    public createdAt! : Date;
-    public updatedAt! : Date;
+    public created_at! : Date;
+    public updated_at! : Date;
 
 }
 
@@ -43,6 +43,7 @@ export let AttachmentFactory : Factory = {
             sequelize : db,
             modelName : 'attachment',
             timestamps : true,
+            underscored : true,
             indexes : [
                 {
                     fields : ['room_id']

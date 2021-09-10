@@ -19,8 +19,8 @@ export class ChatModel extends Model {
     public is_deleted! : boolean;
     public unread_count! : number;
 
-    public createdAt! : Date;
-    public updatedAt! : Date;
+    public created_at! : Date;
+    public updated_at! : Date;
 
 }
 
@@ -38,7 +38,7 @@ export let ChatFactory : Factory = {
                 allowNull : false,
                 type : DataTypes.BIGINT
             },
-            chat_id : {
+            room_id : {
                 allowNull: false,
                 type : DataTypes.BIGINT
             },
@@ -61,7 +61,11 @@ export let ChatFactory : Factory = {
             sequelize : db,
             modelName : 'chat',
             timestamps : true,
+            underscored : true,
             indexes : [
+                {
+                    fields : ['updated_at']
+                },
                 {
                     fields : ['room_id']
                 },
@@ -85,13 +89,7 @@ export let ChatFactory : Factory = {
     relations(){
 
         ChatModel.belongsTo(RoomModel);
-
         ChatModel.belongsTo(UserModel);
-
-        ChatModel.belongsTo(UserModel, {
-            as : 'receiver',
-            foreignKey : 'receiver_id'
-        });
 
     }
 

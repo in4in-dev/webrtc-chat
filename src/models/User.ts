@@ -11,8 +11,8 @@ export class UserModel extends Model{
     public chats? : ChatModel[];
     public getChats! : BelongsToManyGetAssociationsMixin<ChatModel>;
 
-    public createdAt! : Date;
-    public updatedAt! : Date;
+    public created_at! : Date;
+    public updated_at! : Date;
 }
 
 export let UserFactory : Factory = {
@@ -35,6 +35,7 @@ export let UserFactory : Factory = {
             }
         }, {
             sequelize : db,
+            underscored : true,
             modelName : 'user',
             timestamps : true
         });

@@ -23,8 +23,8 @@ export class RoomModel extends Model {
     public messages? : MessageModel[];
     public getMessages!: BelongsToManyGetAssociationsMixin<MessageModel>;
 
-    public createdAt! : Date;
-    public updatedAt! : Date;
+    public created_at! : Date;
+    public updated_at! : Date;
 
 }
 
@@ -42,6 +42,7 @@ export let RoomFactory : Factory = {
         }, {
             sequelize : db,
             modelName : 'room',
+            underscored : true,
             timestamps : true,
         });
 

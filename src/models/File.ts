@@ -12,8 +12,8 @@ export class FileModel extends Model{
     public user? : UserModel;
     public getUser! : BelongsToGetAssociationMixin<UserModel>;
 
-    public createdAt! : Date;
-    public updatedAt! : Date;
+    public created_at! : Date;
+    public updated_at! : Date;
 
 }
 
@@ -43,6 +43,7 @@ export let FileFactory : Factory = {
         }, {
             sequelize : db,
             modelName : 'file',
+            underscored : true,
             timestamps : true
         });
 

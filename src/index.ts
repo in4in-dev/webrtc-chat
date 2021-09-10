@@ -24,7 +24,10 @@ let socket = new Server(server, {
 
 let $usersStore : ClientStore = new ClientStore;
 
+console.log('Socket started');
 socket.on('connection', (connection : Socket) => {
+
+    console.log('User connected');
 
     let client = new Client(connection);
 
@@ -38,12 +41,17 @@ socket.on('connection', (connection : Socket) => {
 
     //Регистрация
     connection.on(ClientActions.REGISTER, async (data) => {
+
         await onSuccessAuth(
-            await User.create({})
+            await User.create({
+                name : data.name
+            })
         );
     });
 
     async function onSuccessAuth(user : User){
+
+        console.log('User auth: ', user.id);
 
         client.auth(user);
 
@@ -62,6 +70,8 @@ socket.on('connection', (connection : Socket) => {
 
         //Отключение (Онлайн --)
         connection.on('disconnect', (data) => {
+
+            console.log('User disconnect', user.id);
 
             $usersStore.remove(client);
             
@@ -236,7 +246,7 @@ socket.on('connection', (connection : Socket) => {
                     where : {
                         ...filter,
                         room_id : chat.room_id,
-                        createdAt : {
+                        created_at : {
                             [Op.gt] : chat.clear_time
                         }
                     },
@@ -316,7 +326,8 @@ socket.on('connection', (connection : Socket) => {
             let message = await Message.create({
                 attachment_id : attachment?.id,
                 room_id : chat.room_id,
-                text
+                text,
+                user_id : user.id
             });
 
             let chats = await room.getChats();
@@ -341,7 +352,13 @@ socket.on('connection', (connection : Socket) => {
 
             let chats = await user.getChats({
                 include : Room,
+                order : [
+                    [literal('unread_count > 0'), 'DESC'],
+                    ['updated_at', 'DESC']
+                ]
             });
+
+            console.log(chats);
 
             connection.emit(ServerActions.AUTHORIZED, {
                 success : true,
@@ -354,6 +371,8 @@ socket.on('connection', (connection : Socket) => {
     }
 
     function onFailureAuth(){
+        console.log('User failed auth');
+
         connection.emit(ServerActions.AUTHORIZED, {
             success : false
         });

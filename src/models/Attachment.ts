@@ -1,21 +1,20 @@
 import {BelongsToGetAssociationMixin, Model, Sequelize} from "sequelize";
 import {DataTypes} from "sequelize";
-import {UserModel} from "./User";
 import {Factory} from "../module/Factory";
-import {ChatModel} from "./Chat";
-import {ChatRelationModel} from "./ChatRelation";
 import {FileModel} from "./File";
+import {RoomModel} from "./Room";
 
 export class AttachmentModel extends Model{
+
     public id! : number;
 
     public file_id! : number;
     public file? : FileModel;
     public getFile! : BelongsToGetAssociationMixin<FileModel>;
 
-    public chat_id! : number;
-    public chat? : ChatModel;
-    public getChat! : BelongsToGetAssociationMixin<ChatModel>;
+    public room_id! : number;
+    public room? : RoomModel;
+    public getRoom! : BelongsToGetAssociationMixin<RoomModel>;
 
     public createdAt! : Date;
     public updatedAt! : Date;
@@ -36,14 +35,19 @@ export let AttachmentFactory : Factory = {
                 type : DataTypes.BIGINT,
                 allowNull: false
             },
-            chat_id : {
+            room_id : {
                 type : DataTypes.BIGINT,
                 allowNull: false
             }
         }, {
             sequelize : db,
             modelName : 'attachment',
-            timestamps : true
+            timestamps : true,
+            indexes : [
+                {
+                    fields : ['room_id']
+                }
+            ]
         });
 
 
@@ -53,7 +57,7 @@ export let AttachmentFactory : Factory = {
 
     relations(){
 
-        AttachmentModel.belongsTo(ChatModel);
+        AttachmentModel.belongsTo(RoomModel);
         AttachmentModel.hasOne(FileModel);
 
     }

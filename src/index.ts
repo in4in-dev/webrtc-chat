@@ -2,14 +2,14 @@ import { Server, Socket } from "socket.io";
 import { createServer } from "http";
 
 import ClientActions from "./consts/ClientActions";
-import {Attachment, ChatRelation, File, User} from "./models";
+import {Attachment, Room, Chat, File, User} from "./models";
 import ServerActions from "./consts/ServerActions";
 import {ClientStore} from "./module/ClientStore";
 import {Client} from "./module/Client";
 import {Message} from "./models";
-import {Chat} from "./models";
 import {connectDatabase} from "./db";
 import {literal, Op} from "sequelize";
+import {OnlineResponse} from "./responses/OnlineResponse";
 
 let server = createServer();
 let db = connectDatabase();
@@ -33,42 +33,44 @@ socket.on('connection', (connection : Socket) => {
 
         let user = await User.findByPk(data.id);
 
-        user ? onSuccessAuth(user) : onFailureAuth();
+        user ? await onSuccessAuth(user) : onFailureAuth();
     });
 
+    //Регистрация
     connection.on(ClientActions.REGISTER, async (data) => {
-        onSuccessAuth(
+        await onSuccessAuth(
             await User.create({})
         );
     });
 
-    function onSuccessAuth(user : User){
+    async function onSuccessAuth(user : User){
 
         client.auth(user);
 
-        welcome();
+        await welcome();
 
-        socket.emit(ServerActions.USER_ONLINE, {
-            id : user.id,
-            online : true
-        });
+        //Онлайн ++
+        socket.emit(
+            ServerActions.USER_ONLINE,
+            new OnlineResponse(user.id, true)
+        );
 
         ///////////////////////////////////
         /////// Handlers
         ///////////////////////////////////
 
 
-        //Отключение
+        //Отключение (Онлайн --)
         connection.on('disconnect', (data) => {
 
             $usersStore.remove(client);
             
             if(!$usersStore.has(user.id)){
 
-                socket.emit(ServerActions.USER_ONLINE, {
-                    id : user.id,
-                    online : false
-                });
+                socket.emit(
+                    ServerActions.USER_ONLINE,
+                    new OnlineResponse(user.id, false)
+                );
 
             }
             
@@ -76,54 +78,40 @@ socket.on('connection', (connection : Socket) => {
 
         connection.on(ClientActions.CREATE_CHAT, async (data) => {
 
-            let receiver = await User.findByPk(data.id);
+            let receiver = await User.findByPk(data.user_id);
 
             if(receiver){
 
-                let chats = await ChatRelation.findAll({
-                    where : {
-                        user_id : user.id
-                    },
-                    attributes : ['id']
+                let rooms = await user.getChats({
+                    attributes : ['room_id']
                 });
 
-                let relation = await ChatRelation.findOne({
+                let chat = await Chat.findOne({
                     where : {
                         user_id : receiver.id,
-                        chat_id : {
-                            [Op.in] : chats.map(r => r.chat_id)
+                        room_id : {
+                            [Op.in] : rooms.map(r => r.room_id)
                         }
                     }
                 });
 
+                if(!chat){
 
-                //Get or Create chat
-                let chat;
+                    let room = await Room.create({});
 
-                if(!relation){
+                    await Chat.create({
+                        user_id : receiver.id,
+                        room_id : room.id
+                    });
 
                     chat = await Chat.create({
-                        name : receiver.name,
-                        picture : receiver.avatar_file_id
-                    });
-
-                    await ChatRelation.create({
-                       user_id : receiver.id,
-                       chat_id : chat.id
-                    });
-
-                    await ChatRelation.create({
                         user_id : user.id,
-                        chat_id : chat.id
+                        room_id : room.id
                     });
-
-                }else{
-
-                    chat = await relation.getChat();
 
                 }
 
-                await sendMessage(chat!, data.text, data.file_id);
+                await sendMessage(chat, data.text, data.file_id);
 
             }
 
@@ -131,29 +119,23 @@ socket.on('connection', (connection : Socket) => {
 
         connection.on(ClientActions.SEND_MESSAGE, async (data) => {
 
-            let relation = await ChatRelation.findOne({
-                where : {
-                    user_id : user.id,
-                    chat_id : data.id
-                },
-                include : Chat
-            });
+            let chat = await getChatByRoom(data.room_id);
 
-            if(relation){
+            if(chat){
 
-                await ChatRelation.update({
+                await Chat.update({
                     is_deleted : false,
                     unread_count : literal('unread_count + 1')
                 }, {
                     where : {
-                        chat_id : data.id
+                        room_id : chat.room_id
                     }
                 });
 
-                relation.unread_count = 0;
-                await relation.save();
+                chat.unread_count = 0;
+                await chat.save();
 
-                await sendMessage(relation.chat!, data.text, data.file_id);
+                await sendMessage(chat, data.text, data.file_id);
 
             }
 
@@ -162,26 +144,27 @@ socket.on('connection', (connection : Socket) => {
         //Удаление сообщения
         connection.on(ClientActions.DELETE_MESSAGE, async (data) => {
 
-            let message = await Message.findByPk(data.id, {
-                include : Chat
+            let message = await Message.findByPk(data.message_id, {
+                include : Room
             });
 
             if(message && message.user_id === user.id){
 
                 await message.destroy();
 
-                let chat = message.chat!;
-                let users = await chat.getUsers();
+                let room = message.room!;
+                let chats = await room.getChats();
 
-                $usersStore.filter(
-                    users.map(u => u.id)
-                ).each((cl : Client) => {
+                chats.forEach(chat => {
+                    $usersStore.filter(chat.user_id).each(cl => {
 
-                    cl.socket.emit(ServerActions.DELETE_MESSAGE, {
-                        message,
-                        chat
+                        cl.socket.emit(ServerActions.DELETE_MESSAGE, {
+                            message,
+                            chat,
+                            room
+                        });
+
                     });
-
                 });
 
             }
@@ -191,24 +174,19 @@ socket.on('connection', (connection : Socket) => {
         //Очистка истории сообщений
         connection.on(ClientActions.CLEAR_CHAT, async (data) => {
 
-            let relation = await ChatRelation.findOne({
-                where : {
-                    chat_id : data.id,
-                    user_id : user.id
-                }
+            let chat = await getChatByRoom(data.room_id, {
+                include : Room
             });
 
-            if(relation){
+            if(chat){
 
-                relation.clear_time = new Date;
-                await relation.save();
+                chat.clear_time = new Date;
+                await chat.save();
 
-                $usersStore.filter(user.id).each((cl : Client) => {
+                let room = chat.room!;
 
-                    cl.socket.emit(ServerActions.CLEAR_CHAT, {
-                        id : relation!.chat_id
-                    })
-
+                $usersStore.filter(user.id).each(cl => {
+                    cl.socket.emit(ServerActions.CLEAR_CHAT, { room, chat })
                 });
 
             }
@@ -219,24 +197,19 @@ socket.on('connection', (connection : Socket) => {
         //Удаление чата
         connection.on(ClientActions.DELETE_CHAT, async (data) => {
 
-            let relation = await ChatRelation.findOne({
-                where : {
-                    chat_id : data.id,
-                    user_id : user.id
-                }
+            let chat = await getChatByRoom(data.room_id, {
+                include : Room
             });
 
-            if(relation){
+            if(chat){
 
-                relation.is_deleted = true;
-                await relation.save();
+                chat.is_deleted = true;
+                await chat.save();
 
-                $usersStore.filter(user.id).each((cl : Client) => {
+                let room = chat!.room;
 
-                    cl.socket.emit(ServerActions.DELETE_CHAT, {
-                        id : relation!.chat_id
-                    })
-
+                $usersStore.filter(user.id).each(cl => {
+                    cl.socket.emit(ServerActions.DELETE_CHAT, { chat, room });
                 });
 
             }
@@ -246,21 +219,15 @@ socket.on('connection', (connection : Socket) => {
         //Получение истории
         connection.on(ClientActions.GET_HISTORY, async (data) => {
 
-            let relation = await ChatRelation.findOne({
-                where : {
-                    chat_id : data.id,
-                    user_id : user.id
-                }
-            });
+            let chat = await getChatByRoom(data.room_id);
 
-            if(relation){
-
+            if(chat){
                 let filter : any = {};
 
-                if(data.lastId){
+                if(data.offset_id){
 
                     filter.id = {
-                        [Op.lt] : data.last
+                        [Op.lt] : data.offset_id
                     };
 
                 }
@@ -268,15 +235,15 @@ socket.on('connection', (connection : Socket) => {
                 let messages = await Message.findAll({
                     where : {
                         ...filter,
-                        chat_id : relation.chat_id,
+                        room_id : chat.room_id,
                         createdAt : {
-                            [Op.gt] : relation.clear_time
+                            [Op.gt] : chat.clear_time
                         }
                     },
                     order : [
                         ['id', 'DESC']
                     ],
-                    include : File,
+                    include : Attachment,
                     limit : Math.min(30, data.limit || 0)
                 });
 
@@ -290,40 +257,42 @@ socket.on('connection', (connection : Socket) => {
         //Пометка прочитанными
         connection.on(ClientActions.READ_CHAT, async (data) => {
 
-            let relation = await ChatRelation.findOne({
-                where : {
-                    chat_id : data.id,
-                    user_id : user.id
-                },
-                include : Chat
+            let chat = await getChatByRoom(data.room_id, {
+                include : Room
             });
 
-            if(relation){
+            if(chat){
 
-                relation.unread_count = 0;
-                await relation.save();
+                chat.unread_count = 0;
+                await chat.save();
 
-                let chat = relation.chat!;
-                let users = await chat.getUsers();
+                let room = chat.room!;
 
-                $usersStore.filter(
-                    users.map(u => u.id)
-                ).each((cl : Client) => {
-
-                    cl.socket.emit(ServerActions.READ_CHAT, {
-                        chat,
-                        unread : relation!.unread_count
-                    });
-
+                $usersStore.filter(user.id).each(cl => {
+                    cl.socket.emit(ServerActions.READ_CHAT, { chat, room });
                 });
 
             }
 
         });
 
+        async function getChatByRoom(
+            room_id : number,
+            { where = {}, ...options } : any = {}
+        ) : Promise<Chat | null> {
 
-        async function sendMessage(chat : Chat, text : string, file_id : number | null){
+            return Chat.findOne({
+                where : {
+                    room_id,
+                    user_id : user.id,
+                    ...where
+                },
+                ...options
+            });
 
+        }
+
+        async function sendMessage(chat : Chat, text : string, file_id : number | null) : Promise<void> {
 
             let attachment = null;
             if(file_id){
@@ -343,33 +312,35 @@ socket.on('connection', (connection : Socket) => {
 
             }
 
+            let room = await chat.getRoom();
             let message = await Message.create({
                 attachment_id : attachment?.id,
-                text,
-                chat_id : chat.id
+                room_id : chat.room_id,
+                text
             });
 
+            let chats = await room.getChats();
 
-            let users = await chat.getUsers();
+            chats.forEach(chat => {
 
-            $usersStore.filter(
-                users.map(u => u.id)
-            ).each((c : Client) => {
+                $usersStore.filter(chat.user_id).each(cl => {
 
-                c.socket.emit(ServerActions.NEW_MESSAGE, {
-                    chat,
-                    message,
-                    users
-                })
+                    cl.socket.emit(ServerActions.NEW_MESSAGE, {
+                        room,
+                        chat,
+                        message
+                    })
+
+                });
 
             });
 
         }
 
-        async function welcome(){
+        async function welcome() : Promise<void> {
 
             let chats = await user.getChats({
-                include : User
+                include : Room,
             });
 
             connection.emit(ServerActions.AUTHORIZED, {
@@ -387,6 +358,7 @@ socket.on('connection', (connection : Socket) => {
             success : false
         });
     }
+
 
 });
 

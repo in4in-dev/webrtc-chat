@@ -5,9 +5,18 @@ const {connectDatabase} = require("../public/db");
 
 	let db = connectDatabase();
 
-	let users = await User.findAll({
-		include : Chat
+	let u = await User.create({
+		name : 'dick'
 	});
 
-	console.log(users[0].chats);
+	Chat.create({
+		user
+	})
+	u.createChat({});
+
+	let user = await User.findOne();
+
+	await user.getChats();
+
+	console.log(user.chats);
 }());

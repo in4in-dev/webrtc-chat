@@ -4,14 +4,15 @@ import {FileModel} from "./File";
 import {UserModel} from "./User";
 import {Factory} from "../module/Factory";
 import {AttachmentModel} from "./Attachment";
+import {RoomModel} from "./Room";
 
 export class MessageModel extends Model{
     public id! : number;
     public text! : string;
 
-    public chat_id! : number;
-    public chat? : ChatModel;
-    public getChat! : BelongsToGetAssociationMixin<ChatModel>;
+    public room_id! : number;
+    public room? : RoomModel;
+    public getRoom! : BelongsToGetAssociationMixin<RoomModel>;
 
     public user_id! : number;
     public user? : UserModel;
@@ -36,7 +37,7 @@ export let MessageFactory : Factory = {
                 autoIncrement : true,
                 type : DataTypes.BIGINT
             },
-            chat_id : {
+            room_id : {
                 allowNull : false,
                 type : DataTypes.BIGINT
             },
@@ -58,7 +59,7 @@ export let MessageFactory : Factory = {
             timestamps : true,
             indexes : [
                 { fields : ['user_id'] },
-                { fields : ['chat_id'] },
+                { fields : ['room_id'] },
                 { fields : ['createdAt'] }
             ]
         });
@@ -69,7 +70,7 @@ export let MessageFactory : Factory = {
 
     relations(){
 
-        MessageModel.belongsTo(ChatModel);
+        MessageModel.belongsTo(RoomModel);
         MessageModel.belongsTo(UserModel);
         MessageModel.hasOne(AttachmentModel);
 

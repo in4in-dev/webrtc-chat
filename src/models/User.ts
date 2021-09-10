@@ -1,10 +1,7 @@
 import {BelongsToManyGetAssociationsMixin, Model, Sequelize} from "sequelize";
 import {DataTypes} from "sequelize";
 import {ChatModel} from "./Chat";
-import {ChatRelationModel} from "./ChatRelation";
 import {Factory} from "../module/Factory";
-import {FileModel} from "./File";
-import {MessageModel} from "./Message";
 
 export class UserModel extends Model{
     public id! : number;
@@ -48,13 +45,7 @@ export let UserFactory : Factory = {
 
     relations() {
 
-        UserModel.belongsToMany(ChatModel, {
-            through : ChatRelationModel
-        });
-
-        UserModel.hasOne(FileModel, {
-            foreignKey : 'avatar_file_id'
-        })
+        UserModel.hasMany(ChatModel);
 
     }
 

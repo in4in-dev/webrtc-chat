@@ -1,24 +1,28 @@
-import {BelongsToManyGetAssociationsMixin, Model, Sequelize} from "sequelize";
+import {BelongsToGetAssociationMixin, Model, Sequelize} from "sequelize";
 import {DataTypes} from "sequelize";
-import {MessageModel} from "./Message";
 import {UserModel} from "./User";
-import {ChatRelationModel} from "./ChatRelation";
+import {RoomModel} from "./Room";
 import {Factory} from "../module/Factory";
 
 export class ChatModel extends Model {
     public id! : number;
 
-    public users? : UserModel[];
-    public getUsers!: BelongsToManyGetAssociationsMixin<UserModel>;
+    public user_id! : number;
+    public user? : UserModel;
+    public getUsers! : BelongsToGetAssociationMixin<UserModel>;
 
-    public messages? : UserModel[];
-    public getMessages!: BelongsToManyGetAssociationsMixin<UserModel>;
+    public room_id! : number;
+    public room? : RoomModel;
+    public getRoom! : BelongsToGetAssociationMixin<RoomModel>;
+
+    public clear_time! : Date | null;
+    public is_deleted! : boolean;
+    public unread_count! : number;
 
     public createdAt! : Date;
     public updatedAt! : Date;
 
 }
-
 
 export let ChatFactory : Factory = {
 
@@ -29,11 +33,49 @@ export let ChatFactory : Factory = {
                 primaryKey : true,
                 autoIncrement : true,
                 type : DataTypes.BIGINT
+            },
+            user_id : {
+                allowNull : false,
+                type : DataTypes.BIGINT
+            },
+            chat_id : {
+                allowNull: false,
+                type : DataTypes.BIGINT
+            },
+            clear_time : {
+                allowNull : true,
+                defaultValue : null,
+                type : DataTypes.DATE
+            },
+            is_deleted : {
+                allowNull : false,
+                defaultValue : false,
+                type : DataTypes.BOOLEAN
+            },
+            unread_count : {
+                allowNull : false,
+                defaultValue : 0,
+                type : DataTypes.INTEGER
             }
         }, {
             sequelize : db,
             modelName : 'chat',
             timestamps : true,
+            indexes : [
+                {
+                    fields : ['room_id']
+                },
+                {
+                    fields : ['is_deleted']
+                },
+                {
+                    fields : ['user_id']
+                },
+                {
+                    fields : ['user_id', 'room_id'],
+                    unique : true
+                }
+            ]
         });
 
         return ChatModel;
@@ -42,8 +84,13 @@ export let ChatFactory : Factory = {
 
     relations(){
 
-        ChatModel.belongsToMany(UserModel, {
-            through : ChatRelationModel
+        ChatModel.belongsTo(RoomModel);
+
+        ChatModel.belongsTo(UserModel);
+
+        ChatModel.belongsTo(UserModel, {
+            as : 'receiver',
+            foreignKey : 'receiver_id'
         });
 
     }

@@ -55,8 +55,7 @@ export let RoomFactory : Factory = {
         RoomModel.hasMany(ChatModel);
 
         RoomModel.belongsToMany(UserModel, {
-            through : ChatModel,
-            foreignKey : 'receiver_id'
+            through : ChatModel
         });
 
     }

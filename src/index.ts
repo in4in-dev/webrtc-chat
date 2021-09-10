@@ -54,6 +54,7 @@ socket.on('connection', (connection : Socket) => {
         console.log('User auth: ', user.id);
 
         client.auth(user);
+        $usersStore.add(client);
 
         await welcome();
 
@@ -133,18 +134,6 @@ socket.on('connection', (connection : Socket) => {
 
             if(chat){
 
-                await Chat.update({
-                    is_deleted : false,
-                    unread_count : literal('unread_count + 1')
-                }, {
-                    where : {
-                        room_id : chat.room_id
-                    }
-                });
-
-                chat.unread_count = 0;
-                await chat.save();
-
                 await sendMessage(chat, data.text, data.file_id);
 
             }
@@ -214,6 +203,7 @@ socket.on('connection', (connection : Socket) => {
             if(chat){
 
                 chat.is_deleted = true;
+                chat.clear_time = new Date;
                 await chat.save();
 
                 let room = chat!.room;
@@ -242,19 +232,22 @@ socket.on('connection', (connection : Socket) => {
 
                 }
 
+                if(chat.clear_time){
+                    filter.created_at = {
+                        [Op.gt] : chat.clear_time
+                    }
+                }
+
                 let messages = await Message.findAll({
                     where : {
                         ...filter,
                         room_id : chat.room_id,
-                        created_at : {
-                            [Op.gt] : chat.clear_time
-                        }
                     },
                     order : [
                         ['id', 'DESC']
                     ],
                     include : Attachment,
-                    limit : Math.min(30, data.limit || 0)
+                    limit : Math.min(30, data.limit || 30)
                 });
 
                 connection.emit(ServerActions.HISTORY_LOADED, { messages })
@@ -322,6 +315,18 @@ socket.on('connection', (connection : Socket) => {
 
             }
 
+            await Chat.update({
+                is_deleted : false,
+                unread_count : literal('unread_count + 1')
+            }, {
+                where : {
+                    room_id : chat.room_id
+                }
+            });
+
+            chat.unread_count = 0;
+            await chat.save();
+
             let room = await chat.getRoom();
             let message = await Message.create({
                 attachment_id : attachment?.id,
@@ -358,12 +363,15 @@ socket.on('connection', (connection : Socket) => {
                 ]
             });
 
-            console.log(chats);
-
             connection.emit(ServerActions.AUTHORIZED, {
                 success : true,
                 user,
-                chats
+                chats : chats.map(chat => {
+                    return {
+                        chat,
+                        room : chat.room
+                    }
+                })
             });
 
         }

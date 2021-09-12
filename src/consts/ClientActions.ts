@@ -1,7 +1,6 @@
 //Действия юзера
 
 export default {
-    REGISTER : 'user.register',
     AUTH : 'user.auth',
 
     SEND_MESSAGE : 'message.send',

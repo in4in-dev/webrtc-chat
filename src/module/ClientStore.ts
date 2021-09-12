@@ -13,6 +13,13 @@ export class ClientStore {
         this.collection.forEach(fn);
     }
 
+    public emit(action : string, fn : (u : Client) => any) : void
+    {
+        this.each(cl => {
+           cl.connection.emit(action, fn(cl));
+        });
+    }
+
     public get(id : number) : Client | null
     {
         return this.collection.find(e => e.id === id) || null;

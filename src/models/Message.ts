@@ -25,6 +25,14 @@ export class MessageModel extends Model{
     public created_at! : Date;
     public updated_at! : Date;
 
+    public toJSON(): object {
+
+        let {id, room_id, created_at, updated_at, user_id, text, attachment = null} = this;
+
+        return {id, room_id, created_at, updated_at, user_id, text, attachment};
+
+    }
+
 }
 
 export let MessageFactory : Factory = {

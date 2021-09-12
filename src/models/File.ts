@@ -5,7 +5,6 @@ import {Factory} from "../module/Factory";
 
 export class FileModel extends Model{
     public id! : number;
-    public type! : string;
     public path! : string;
 
     public user_id! : number;
@@ -26,11 +25,6 @@ export let FileFactory : Factory = {
                 primaryKey : true,
                 autoIncrement : true,
                 type : DataTypes.BIGINT
-            },
-            type : {
-                type : DataTypes.ENUM({
-                    values : ['video', 'photo', 'voice', 'file']
-                })
             },
             path : {
                 type : DataTypes.STRING,

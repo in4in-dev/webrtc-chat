@@ -21,22 +21,21 @@
 
 			socket.on('on.user.authorized', function(data){
 
+				console.log('Auth', data);
+
 				socket.on('on.message.new', function(data){
-					console.log(data);
+					console.log('Message', data);
 				});
 
-				socket.on('on.chat.history', function(data){
-					console.log(data);
-				})
 
-				socket.emit('chat.history', {
-					room_id : 1
+				socket.emit('chat.start', {
+					user_id : 2
 				});
 
 			});
 
 			socket.emit('user.auth', {
-				id : 2
+				id : 1
 			});
 
 		});

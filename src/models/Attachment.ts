@@ -8,6 +8,8 @@ export class AttachmentModel extends Model{
 
     public id! : number;
 
+    public type! : string;
+
     public file_id! : number;
     public file? : FileModel;
     public getFile! : BelongsToGetAssociationMixin<FileModel>;
@@ -18,6 +20,14 @@ export class AttachmentModel extends Model{
 
     public created_at! : Date;
     public updated_at! : Date;
+
+    public toJSON(): object {
+
+        let {id, file_id, created_at, updated_at, room_id} = this;
+
+        return {id, file_id, created_at, updated_at, room_id};
+
+    }
 
 }
 
@@ -38,6 +48,11 @@ export let AttachmentFactory : Factory = {
             room_id : {
                 type : DataTypes.BIGINT,
                 allowNull: false
+            },
+            type : {
+                type : DataTypes.ENUM({
+                    values : ['video', 'photo', 'voice', 'file']
+                })
             }
         }, {
             sequelize : db,

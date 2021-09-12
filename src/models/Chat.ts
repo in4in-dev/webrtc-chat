@@ -22,6 +22,14 @@ export class ChatModel extends Model {
     public created_at! : Date;
     public updated_at! : Date;
 
+    public toJSON(): object {
+
+        let {user_id, created_at, updated_at, unread_count} = this;
+
+        return {user_id, created_at, updated_at, unread_count};
+
+    }
+
 }
 
 export let ChatFactory : Factory = {

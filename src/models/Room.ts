@@ -14,8 +14,8 @@ import {ChatModel} from "./Chat";
 export class RoomModel extends Model {
     public id! : number;
 
-    public receivers? : UserModel[];
-    public getReceivers!: BelongsToManyGetAssociationsMixin<UserModel>;
+    public users? : UserModel[];
+    public getUsers!: BelongsToManyGetAssociationsMixin<UserModel>;
 
     public chats? : ChatModel[];
     public getChats!: HasManyGetAssociationsMixin<ChatModel>;
@@ -25,6 +25,14 @@ export class RoomModel extends Model {
 
     public created_at! : Date;
     public updated_at! : Date;
+
+    public toJSON(): object {
+
+        let {id, created_at, users = []} = this;
+
+        return {id, created_at, users};
+
+    }
 
 }
 

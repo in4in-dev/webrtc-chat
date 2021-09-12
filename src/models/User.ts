@@ -13,6 +13,15 @@ export class UserModel extends Model{
 
     public created_at! : Date;
     public updated_at! : Date;
+
+    public toJSON(): object {
+
+        let {id} = this;
+
+        return {id};
+
+    }
+
 }
 
 export let UserFactory : Factory = {

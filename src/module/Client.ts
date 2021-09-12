@@ -28,39 +28,41 @@ export class Client {
         this.id = user.id;
     }
 
-    public async getChatByRoom(room_id : number, { where = {}, ...options } : any = {}) : Promise<Chat | null>
+    public async getChats() : Promise<ChatRoomDump[]>
     {
 
-        return Chat.findOne({
+        let chats = await this.user.getChats({
             where : {
-                room_id,
-                user_id : this.user.id,
-                ...where
+                is_deleted : false
             },
-            ...options
-        });
-
-    }
-
-    public async getChats() : Promise<Chat[]>
-    {
-
-        return this.user.getChats({
-            include : Room,
             order : [
                 [literal('unread_count > 0'), 'DESC'],
                 ['updated_at', 'DESC']
             ]
         });
 
+        let result = [];
+
+        for(let i in chats){
+
+            let chat = chats[i];
+
+            let room = await chat.getRoom({
+                include : User
+            });
+
+            result.push({ room, chat });
+
+        }
+
+        return result;
+
     }
 
     public async readChat(room_id : number) : Promise<ChatRoomDump|null>
     {
 
-        let chat = await this.getChatByRoom(room_id, {
-            include : Room
-        });
+        let chat = await this.getChatByRoom(room_id);
 
         if(!chat){
             return null;
@@ -69,14 +71,15 @@ export class Client {
         chat.unread_count = 0;
         await chat.save();
 
-        return {
-            chat,
-            room : chat.room!
-        }
+        let room = await chat.getRoom({
+            include : User
+        })
+
+        return { chat, room }
 
     }
 
-    public async getHistory(room_id : number, last_id : number | null, limit : number = 30) : Promise<Message[] | null>
+    public async getHistory(room_id : number, last_id : number | null, limit : number) : Promise<Message[] | null>
     {
 
         let chat = await this.getChatByRoom(room_id);
@@ -118,9 +121,7 @@ export class Client {
     public async deleteChat(room_id : number) : Promise<ChatRoomDump|null>
     {
 
-        let chat = await this.getChatByRoom(room_id, {
-            include : Room
-        });
+        let chat = await this.getChatByRoom(room_id);
 
         if(!chat){
             return null;
@@ -130,19 +131,18 @@ export class Client {
         chat.clear_time = new Date;
         await chat.save();
 
-        return {
-            chat,
-            room : chat.room!
-        }
+        let room = await chat.getRoom({
+            include : User
+        });
+
+        return { chat, room }
 
     }
 
     public async clearChat(room_id : number) : Promise<ChatRoomDump|null>
     {
 
-        let chat = await this.getChatByRoom(room_id, {
-            include : Room
-        });
+        let chat = await this.getChatByRoom(room_id);
 
         if(!chat){
             return null;
@@ -151,10 +151,11 @@ export class Client {
         chat.clear_time = new Date;
         await chat.save();
 
-        return {
-            chat,
-            room : chat.room!
-        }
+        let room = await chat.getRoom({
+            include : User
+        });
+
+        return { chat, room }
 
     }
 
@@ -162,18 +163,19 @@ export class Client {
     {
 
         let message = await Message.findByPk(message_id, {
-            include : Room
+            include : Attachment
         });
 
         if(message && message.user_id === this.user.id){
 
             await message.destroy();
 
-            let room = message.room!;
-            let chats = await room.getChats();
+            let room = await message.getRoom({
+                include : [User, Chat],
+            });
 
             return {
-                chats,
+                chats : room.chats!,
                 room,
                 message
             }
@@ -241,6 +243,20 @@ export class Client {
 
     }
 
+    protected async getChatByRoom(room_id : number, { where = {}, ...options } : any = {}) : Promise<Chat | null>
+    {
+
+        return Chat.findOne({
+            where : {
+                room_id,
+                user_id : this.user.id,
+                ...where
+            },
+            ...options
+        });
+
+    }
+
     protected async createAttachment(file_id : number, chat_id : number) : Promise<Attachment|null>{
 
         let file = await File.findByPk(file_id);
@@ -274,13 +290,17 @@ export class Client {
         chat.unread_count = 0;
         await chat.save();
 
-        let room = await chat.getRoom();
+        let room = await chat.getRoom({
+            include : User
+        });
 
         let message = await Message.create({
             attachment_id : attachment?.id,
             room_id : chat.room_id,
             user_id : this.user.id,
             text
+        }, {
+            include : Attachment
         });
 
         let chats = await room.getChats();

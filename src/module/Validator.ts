@@ -14,11 +14,23 @@ export class Field{
     public validate(value : any) : boolean
     {
 
-        if(typeof this.type === 'object'){
+        if(typeof this.type === 'string'){
+
+            if(this.type === 'number'){
+
+                return typeof value === 'number' &&
+                    value < Infinity &&
+                    value > -Infinity;
+
+            }
+
+            return (this.type === '*') || (typeof value === this.type);
+
+        }else if(typeof this.type === 'object'){
             return (value instanceof this.type);
         }
 
-        return (typeof value === this.type);
+        return false;
 
     }
 

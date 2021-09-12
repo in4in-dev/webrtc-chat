@@ -11,6 +11,9 @@ export default {
     DELETE_CHAT : 'chat.delete',
     READ_CHAT : 'chat.read',
 
-    GET_HISTORY : 'chat.history'
+    GET_HISTORY : 'chat.history',
+
+    CALL_INIT : 'call.start',
+    CALL_ANSWER : 'call.answer'
 
 }

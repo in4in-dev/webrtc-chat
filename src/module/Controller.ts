@@ -11,6 +11,9 @@ import {ChatResponse} from "../responses/ChatResponse";
 import {Field, Validator} from "./Validator";
 import {HistoryResponse} from "../responses/HistoryResponse";
 import {AuthResponse} from "../responses/AuthResponse";
+import {CallResponse} from "../responses/CallResponse";
+import {DefaultResponse} from "../responses/DefaultResponse";
+import {ErrorResponse} from "../responses/ErrorResponse";
 
 export class Controller{
 
@@ -54,7 +57,6 @@ export class Controller{
 
     }
 
-
     protected async onSuccessAuth(connection : Socket, user : User){
 
         let client = new Client(connection, user);
@@ -64,6 +66,70 @@ export class Controller{
 
         connection.on('disconnect', () => {
             this.onDisconnect(client);
+        });
+
+        //Звонок
+        connection.on(ClientActions.CALL_INIT, async (request) => {
+
+            let data = <any>new Validator({
+                'user_id' : new Field('number'),
+                'ice_candidate' : new Field('*')
+            }).validate(request);
+
+            if(data){
+
+                let target = await User.findByPk(data.user_id);
+
+                if(target){
+
+                    this.emitByUser(target.id, ServerActions.CALL_INIT, client => {
+                        return new CallResponse(user, data.ice_candidate);
+                    })
+
+                }else{
+
+                    connection.emit(ServerActions.CALL_INIT, new ErrorResponse('User not found'));
+
+                }
+
+            }else{
+
+                connection.emit(ServerActions.CALL_INIT, new ErrorResponse('Bad data'))
+
+            }
+
+        });
+
+        //Ответ на звонок
+        connection.on(ClientActions.CALL_ANSWER, async (request) => {
+
+            let data = <any>new Validator({
+                'user_id' : new Field('number'),
+                'ice_candidate' : new Field('*')
+            }).validate(request);
+
+            if(data){
+
+                let target = await User.findByPk(data.user_id);
+
+                if(target){
+
+                    this.emitByUser(target.id, ServerActions.CALL_ANSWER, client => {
+                        return new CallResponse(user, data.ice_candidate);
+                    })
+
+                }else{
+
+                    connection.emit(ServerActions.CALL_ANSWER, new ErrorResponse('User not found'));
+
+                }
+
+            }else{
+
+                connection.emit(ServerActions.CALL_ANSWER, new ErrorResponse('Bad data'));
+
+            }
+
         });
 
         //Новый диалог
@@ -82,6 +148,10 @@ export class Controller{
                 response && this.emitInChats(response.chats, ServerActions.NEW_MESSAGE, (chat) => {
                     return new MessageResponse(response!.message, chat, response!.room);
                 });
+
+            }else{
+
+                connection.emit(ServerActions.CALL_ANSWER, new ErrorResponse('Bad data'));
 
             }
 
@@ -104,6 +174,10 @@ export class Controller{
                     return new MessageResponse(response!.message, chat, response!.room);
                 });
 
+            }else{
+
+                connection.emit(ServerActions.CALL_ANSWER, new ErrorResponse('Bad data'));
+
             }
 
         });
@@ -122,6 +196,10 @@ export class Controller{
                 response && this.emitInChats(response.chats, ServerActions.DELETE_MESSAGE, (chat) => {
                     return new MessageResponse(response!.message, chat, response!.room);
                 });
+
+            }else{
+
+                connection.emit(ServerActions.CALL_ANSWER, new ErrorResponse('Bad data'));
 
             }
 
@@ -142,6 +220,10 @@ export class Controller{
                     return new ChatResponse(response!.chat, response!.room);
                 });
 
+            }else{
+
+                connection.emit(ServerActions.CALL_ANSWER, new ErrorResponse('Bad data'));
+
             }
 
         });
@@ -160,6 +242,10 @@ export class Controller{
                 response && this.emitByUser(user.id, ServerActions.DELETE_CHAT, () => {
                     return new ChatResponse(response!.chat, response!.room);
                 });
+
+            }else{
+
+                connection.emit(ServerActions.CALL_ANSWER, new ErrorResponse('Bad data'));
 
             }
 
@@ -180,6 +266,10 @@ export class Controller{
 
                 connection.emit(ServerActions.HISTORY_LOADED, new HistoryResponse(messages || []));
 
+            }else{
+
+                connection.emit(ServerActions.CALL_ANSWER, new ErrorResponse('Bad data'));
+
             }
 
         });
@@ -198,6 +288,10 @@ export class Controller{
                 response && this.emitByUser(user.id, ServerActions.DELETE_CHAT, () => {
                     return new ChatResponse(response!.chat, response!.room);
                 });
+
+            }else{
+
+                connection.emit(ServerActions.CALL_ANSWER, new ErrorResponse('Bad data'));
 
             }
 

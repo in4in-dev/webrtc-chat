@@ -13,6 +13,9 @@ export default {
 
     AUTHORIZED : 'on.user.authorized',
 
-    USER_ONLINE : 'on.user.online'
+    USER_ONLINE : 'on.user.online',
+
+    CALL_INIT : 'on.call.init',
+    CALL_ANSWER : 'on.call.answer'
 
 }

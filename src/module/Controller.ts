@@ -75,12 +75,14 @@ export class Controller{
 
         //Звонок
         connection.on(ClientActions.CALL_INIT, async (request) => {
-
+console.log(request);
             let data = <any>new Validator({
                 'user_id' : new Field('number'),
                 'ice_candidate' : new Field('*'),
                 'session_description' : new Field('*')
             }).validate(request);
+
+            console.log(data);
 
             if(data){
 

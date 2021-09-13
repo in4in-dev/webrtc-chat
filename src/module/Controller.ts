@@ -27,13 +27,18 @@ export class Controller{
             console.log('User connected');
 
             //Авторизация
-            connection.on(ClientActions.AUTH, async (data) => {
+            connection.on(ClientActions.AUTH, async (request) => {
 
-                let user = await User.findByPk(data.id);
+                let data = new Validator({
+                    id : new Field('number')
+                }).validate(request);
+
+                let user = data && await User.findByPk(data.id);
 
                 user
                     ? await this.onSuccessAuth(connection, user)
                     : await this.onFailureAuth(connection);
+
 
             });
 
@@ -77,6 +82,7 @@ export class Controller{
                 'session_description' : new Field('*')
             }).validate(request);
 
+
             if(data){
 
                 let target = await User.findByPk(data.user_id);
@@ -89,13 +95,13 @@ export class Controller{
 
                 }else{
 
-                    connection.emit(ServerActions.CALL_INIT, new ErrorResponse('User not found'));
+                    connection.emit(ServerActions.ERROR, new ErrorResponse('User not found'));
 
                 }
 
             }else{
 
-                connection.emit(ServerActions.CALL_INIT, new ErrorResponse('Bad data'))
+                connection.emit(ServerActions.ERROR, new ErrorResponse('Bad data'))
 
             }
 
@@ -122,13 +128,13 @@ export class Controller{
 
                 }else{
 
-                    connection.emit(ServerActions.CALL_ANSWER, new ErrorResponse('User not found'));
+                    connection.emit(ServerActions.ERROR, new ErrorResponse('User not found'));
 
                 }
 
             }else{
 
-                connection.emit(ServerActions.CALL_ANSWER, new ErrorResponse('Bad data'));
+                connection.emit(ServerActions.ERROR, new ErrorResponse('Bad data'));
 
             }
 
@@ -153,7 +159,7 @@ export class Controller{
 
             }else{
 
-                connection.emit(ServerActions.CALL_ANSWER, new ErrorResponse('Bad data'));
+                connection.emit(ServerActions.ERROR, new ErrorResponse('Bad data'));
 
             }
 
@@ -178,7 +184,7 @@ export class Controller{
 
             }else{
 
-                connection.emit(ServerActions.CALL_ANSWER, new ErrorResponse('Bad data'));
+                connection.emit(ServerActions.ERROR, new ErrorResponse('Bad data'));
 
             }
 
@@ -201,7 +207,7 @@ export class Controller{
 
             }else{
 
-                connection.emit(ServerActions.CALL_ANSWER, new ErrorResponse('Bad data'));
+                connection.emit(ServerActions.ERROR, new ErrorResponse('Bad data'));
 
             }
 
@@ -224,7 +230,7 @@ export class Controller{
 
             }else{
 
-                connection.emit(ServerActions.CALL_ANSWER, new ErrorResponse('Bad data'));
+                connection.emit(ServerActions.ERROR, new ErrorResponse('Bad data'));
 
             }
 
@@ -247,7 +253,7 @@ export class Controller{
 
             }else{
 
-                connection.emit(ServerActions.CALL_ANSWER, new ErrorResponse('Bad data'));
+                connection.emit(ServerActions.ERROR, new ErrorResponse('Bad data'));
 
             }
 
@@ -274,7 +280,7 @@ export class Controller{
 
             }else{
 
-                connection.emit(ServerActions.CALL_ANSWER, new ErrorResponse('Bad data'));
+                connection.emit(ServerActions.ERROR, new ErrorResponse('Bad data'));
 
             }
 
@@ -291,13 +297,13 @@ export class Controller{
 
                 let response = await client.readChat(data.room_id);
 
-                response && this.emitByUser(user.id, ServerActions.DELETE_CHAT, () => {
+                response && this.emitByUser(user.id, ServerActions.READ_CHAT, () => {
                     return new ChatResponse(response!.chat, response!.room);
                 });
 
             }else{
 
-                connection.emit(ServerActions.CALL_ANSWER, new ErrorResponse('Bad data'));
+                connection.emit(ServerActions.ERROR, new ErrorResponse('Bad data'));
 
             }
 

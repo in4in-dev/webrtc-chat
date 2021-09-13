@@ -73,7 +73,8 @@ export class Controller{
 
             let data = <any>new Validator({
                 'user_id' : new Field('number'),
-                'ice_candidate' : new Field('*')
+                'ice_candidate' : new Field('*'),
+                'session_description' : new Field('*')
             }).validate(request);
 
             if(data){
@@ -83,7 +84,7 @@ export class Controller{
                 if(target){
 
                     this.emitByUser(target.id, ServerActions.CALL_INIT, client => {
-                        return new CallResponse(user, data.ice_candidate);
+                        return new CallResponse(user, data.ice_candidate, data.session_description);
                     })
 
                 }else{
@@ -105,7 +106,8 @@ export class Controller{
 
             let data = <any>new Validator({
                 'user_id' : new Field('number'),
-                'ice_candidate' : new Field('*')
+                'ice_candidate' : new Field('*'),
+                'session_description' : new Field('*')
             }).validate(request);
 
             if(data){
@@ -115,7 +117,7 @@ export class Controller{
                 if(target){
 
                     this.emitByUser(target.id, ServerActions.CALL_ANSWER, client => {
-                        return new CallResponse(user, data.ice_candidate);
+                        return new CallResponse(user, data.ice_candidate, data.session_description);
                     })
 
                 }else{

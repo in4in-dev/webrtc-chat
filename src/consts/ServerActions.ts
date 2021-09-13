@@ -16,6 +16,8 @@ export default {
     USER_ONLINE : 'on.user.online',
 
     CALL_INIT : 'on.call.init',
-    CALL_ANSWER : 'on.call.answer'
+    CALL_ANSWER : 'on.call.answer',
+
+    ERROR : 'on.error'
 
 }

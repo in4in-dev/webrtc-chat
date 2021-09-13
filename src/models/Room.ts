@@ -28,9 +28,9 @@ export class RoomModel extends Model {
 
     public toJSON(): object {
 
-        let {id, created_at, users = []} = this;
+        let {id, created_at, users = [], messages = []} = this;
 
-        return {id, created_at, users};
+        return {id, created_at, users, message : messages.length ? messages[0] : null};
 
     }
 
@@ -59,6 +59,8 @@ export let RoomFactory : Factory = {
     },
 
     relations(){
+
+        RoomModel.hasMany(MessageModel);
 
         RoomModel.hasMany(ChatModel);
 

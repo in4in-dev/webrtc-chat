@@ -5,7 +5,6 @@ import {Factory} from "../module/Factory";
 
 export class UserModel extends Model{
     public id! : number;
-    public email! : string;
 
     public chats? : ChatModel[];
     public getChats! : BelongsToManyGetAssociationsMixin<ChatModel>;
@@ -15,9 +14,9 @@ export class UserModel extends Model{
 
     public toJSON(): object {
 
-        let {id, email, created_at} = this;
+        let {id, created_at} = this;
 
-        return {id, email, created_at};
+        return {id, created_at};
 
     }
 
@@ -32,10 +31,6 @@ export let UserFactory : Factory = {
                 primaryKey: true,
                 autoIncrement: true,
                 type: DataTypes.BIGINT
-            },
-            email : {
-                allowNull : false,
-                type : DataTypes.STRING
             }
         }, {
             sequelize : db,

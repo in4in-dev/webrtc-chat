@@ -48,7 +48,10 @@ export class Client {
             let chat = chats[i];
 
             let room = await chat.getRoom({
-                include : User
+                include : [User, {
+                    model : Message,
+                    limit : 1
+                }],
             });
 
             result.push({ room, chat });
@@ -283,6 +286,9 @@ export class Client {
             unread_count : literal('unread_count + 1')
         }, {
             where : {
+                user_id : {
+                    [Op.not] : chat.user_id
+                },
                 room_id : chat.room_id
             }
         });

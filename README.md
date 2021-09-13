@@ -23,7 +23,7 @@ let socket = io('ws://localhost:3000', {
 
 ## Действия
 ### Авторизация и получение списка диалогов
-В ответ будет иницировано событие ```on.user.authorized```
+В ответ будет вызвано событие ```on.user.authorized```
 ```javascript
 socket.emit('user.auth', {
     token : String
@@ -32,7 +32,7 @@ socket.emit('user.auth', {
 
 ### Новый диалог
 
-В ответ будет иницировано событие ```on.messages.new```
+В ответ будет вызвано событие ```on.messages.new```
 ```javascript
 socket.emit('chat.start', {
     user_id : Number,
@@ -43,7 +43,7 @@ socket.emit('chat.start', {
 
 ### Отправка сообщения
 
-В ответ будет иницировано событие ```on.messages.new```
+В ответ будет вызвано событие ```on.messages.new```
 ```javascript
 socket.emit('message.send', {
     room_id : Number,
@@ -54,7 +54,7 @@ socket.emit('message.send', {
 
 ### Удаление сообщения
 
-В ответ будет иницировано событие ```on.messages.delete```
+В ответ будет вызвано событие ```on.messages.delete```
 ```javascript
 socket.emit('message.delete', {
     message_id : Number
@@ -63,7 +63,7 @@ socket.emit('message.delete', {
 
 ### Получить историю чата
 
-В ответ будет иницировано событие ```on.chat.history```
+В ответ будет вызвано событие ```on.chat.history```
 ```javascript
 socket.emit('chat.history', {
     room_id : Number,
@@ -74,7 +74,7 @@ socket.emit('chat.history', {
 
 ### Отметить чат прочитанным
 
-В ответ будет иницировано событие ```on.chat.read```
+В ответ будет вызвано событие ```on.chat.read```
 ```javascript
 socket.emit('chat.read', {
     room_id : Number
@@ -83,7 +83,7 @@ socket.emit('chat.read', {
 
 ### Очистить историю чата
 
-В ответ будет иницировано событие ```on.chat.clear```
+В ответ будет вызвано событие ```on.chat.clear```
 ```javascript
 socket.emit('chat.clear', {
     room_id : Number
@@ -92,7 +92,7 @@ socket.emit('chat.clear', {
 
 ### Удалить чат
 
-В ответ будет иницировано событие ```on.chat.clear```
+В ответ будет вызвано событие ```on.chat.clear```
 ```javascript
 socket.emit('chat.delete', {
     room_id : Number
@@ -101,7 +101,7 @@ socket.emit('chat.delete', {
 
 ### Начать звонок
 
-В ответ будет иницировано событие ```on.call.init```
+В ответ будет вызвано событие ```on.call.init```
 ```javascript
 socket.emit('call.start', {
     user_id : Number,
@@ -112,7 +112,7 @@ socket.emit('call.start', {
 
 ### Ответить на звонок
 
-В ответ будет иницировано событие ```on.call.answer```
+В ответ будет вызвано событие ```on.call.answer```
 ```javascript
 socket.emit('call.answer', {
     user_id : Number,

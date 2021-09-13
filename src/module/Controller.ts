@@ -264,9 +264,13 @@ export class Controller{
 
             if(data){
 
-                let messages = await client.getHistory(data.room_id, data.last_id, Math.max(1, data.limit));
+                let response = await client.getHistory(data.room_id, data.last_id, Math.max(1, data.limit));
 
-                connection.emit(ServerActions.HISTORY_LOADED, new HistoryResponse(messages || []));
+                if(response){
+                    connection.emit(ServerActions.HISTORY_LOADED,
+                        new HistoryResponse(response.room, response.chat, response.messages)
+                    );
+                }
 
             }else{
 

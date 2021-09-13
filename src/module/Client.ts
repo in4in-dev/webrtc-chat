@@ -14,6 +14,12 @@ interface MessageDump{
     room : Room
 }
 
+interface HistoryDump{
+    messages : Message[],
+    chat : Chat,
+    room : Room
+}
+
 export class Client {
 
     public id : number;
@@ -79,10 +85,12 @@ export class Client {
 
     }
 
-    public async getHistory(room_id : number, last_id : number | null, limit : number) : Promise<Message[] | null>
+    public async getHistory(room_id : number, last_id : number | null, limit : number) : Promise<HistoryDump | null>
     {
 
-        let chat = await this.getChatByRoom(room_id);
+        let chat = await this.getChatByRoom(room_id, {
+            include : Room
+        });
 
         if(!chat){
             return null;
@@ -104,7 +112,7 @@ export class Client {
             }
         }
 
-        return Message.findAll({
+        let messages = await Message.findAll({
             where : {
                 ...filter,
                 room_id : chat.room_id,
@@ -115,6 +123,14 @@ export class Client {
             include : Attachment,
             limit
         });
+
+        let room = chat.room!;
+
+        return {
+            messages,
+            chat,
+            room
+        }
 
     }
 

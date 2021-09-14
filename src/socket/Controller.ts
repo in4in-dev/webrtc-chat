@@ -38,7 +38,7 @@ export class Controller{
 
                     let user = await User.findByPk(data.id);
 
-                    if(user && user.token === data.token){
+                    if(user && user.token && user.token === data.token){
                         return this.onSuccessAuth(connection, user);
                     }
 

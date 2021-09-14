@@ -102,7 +102,7 @@ export default class Controller{
     {
         let user = await User.findByPk(user_id);
 
-        return !!(user && user.token === token);
+        return !!(user && user.token && user.token === token);
     }
 
     protected async checkAccess(user_id : number, room_id : number) : Promise<boolean>

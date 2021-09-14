@@ -4,16 +4,16 @@ import {Client} from "./Client";
 import ClientActions from "../consts/ClientActions";
 import {Attachment, File, Message, Room, User, Chat} from "../models";
 import ServerActions from "../consts/ServerActions";
-import {OnlineResponse} from "../responses/OnlineResponse";
+import {OnlineResponse} from "./responses/OnlineResponse";
 import {literal, Op} from "sequelize";
-import {MessageResponse} from "../responses/MessageResponse";
-import {ChatResponse} from "../responses/ChatResponse";
-import {Field, Validator} from "./Validator";
-import {HistoryResponse} from "../responses/HistoryResponse";
-import {AuthResponse} from "../responses/AuthResponse";
-import {CallResponse} from "../responses/CallResponse";
-import {DefaultResponse} from "../responses/DefaultResponse";
-import {ErrorResponse} from "../responses/ErrorResponse";
+import {MessageResponse} from "./responses/MessageResponse";
+import {ChatResponse} from "./responses/ChatResponse";
+import {Field, Validator} from "../module/Validator";
+import {HistoryResponse} from "./responses/HistoryResponse";
+import {AuthResponse} from "./responses/AuthResponse";
+import {CallResponse} from "./responses/CallResponse";
+import {DefaultResponse} from "./responses/DefaultResponse";
+import {ErrorResponse} from "./responses/ErrorResponse";
 
 export class Controller{
 
@@ -29,16 +29,22 @@ export class Controller{
             //Авторизация
             connection.on(ClientActions.AUTH, async (request) => {
 
-                let data = new Validator({
-                    id : new Field('number')
+                let data = <any>new Validator({
+                    id : new Field('number'),
+                    token : new Field('string')
                 }).validate(request);
 
-                let user = data && await User.findByPk(data.id);
+                if(data){
 
-                user
-                    ? await this.onSuccessAuth(connection, user)
-                    : await this.onFailureAuth(connection);
+                    let user = await User.findByPk(data.id);
 
+                    if(user && user.token === data.token){
+                        return this.onSuccessAuth(connection, user);
+                    }
+
+                }
+
+                return this.onFailureAuth(connection);
 
             });
 
@@ -146,12 +152,12 @@ export class Controller{
             let data = new Validator({
                 'user_id' : new Field('number'),
                 'text'    : new Field('string', false, ''),
-                'file_id' : new Field('number', false, null)
+                'attachment_id' : new Field('number', false, null)
             }).validate(request);
 
             if(data){
 
-                let response = await client.createChat(data.user_id, data.text, data.file_id);
+                let response = await client.createChat(data.user_id, data.text, data.attachment_id);
 
                 response && this.emitInChats(response.chats, ServerActions.NEW_MESSAGE, (chat) => {
                     return new MessageResponse(response!.message, chat, response!.room);
@@ -171,12 +177,12 @@ export class Controller{
             let data = new Validator({
                 'room_id' : new Field('number'),
                 'text'    : new Field('string', false, ''),
-                'file_id' : new Field('number', false, null)
+                'attachment_id' : new Field('number', false, null)
             }).validate(request);
 
             if(data){
 
-                let response = await client.sendMessage(data.room_id, data.text, data.file_id);
+                let response = await client.sendMessage(data.room_id, data.text, data.attachment_id);
 
                 response && this.emitInChats(response.chats, ServerActions.NEW_MESSAGE, (chat) => {
                     return new MessageResponse(response!.message, chat, response!.room);
@@ -315,13 +321,33 @@ export class Controller{
 
         console.log('User failed auth');
 
-        connection.emit(ServerActions.AUTHORIZED, new AuthResponse(false));
+        connection.emit(ServerActions.AUTHORIZED, new AuthResponse(null));
 
     }
 
     protected async onWelcome(client : Client){
 
-        let chats = await client.getChats();
+        let chats = [];
+
+        let dialogs = await client.getChats();
+
+        for(let dialog of dialogs){
+
+            let messages = await dialog.room.getMessages({
+                limit : 1,
+                order : [
+                    ['id', 'DESC']
+                ],
+                include : Attachment
+            });
+
+            chats.push({
+                room : dialog.room,
+                chat : dialog.chat,
+                message : messages.length ? messages[0] : null
+            })
+
+        }
 
         client.connection.emit(ServerActions.AUTHORIZED, new AuthResponse(client.user, chats));
 

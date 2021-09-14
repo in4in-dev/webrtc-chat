@@ -1,5 +1,5 @@
 import {DefaultResponse} from "./DefaultResponse";
-import {Chat, Message, Room} from "../models";
+import {Chat, Room} from "../../models";
 
 export class ChatResponse extends DefaultResponse{
 

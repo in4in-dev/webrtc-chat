@@ -31,6 +31,7 @@ let socket = io('ws://localhost:3000', {
 В ответ у вас будет вызвано событие ```on.user.authorized```
 ```typescript
 socket.emit('user.auth', {
+    id : Number,
     token : String
 })
 ```
@@ -42,7 +43,7 @@ socket.emit('user.auth', {
 socket.emit('chat.start', {
     user_id : Number,
     text : String,
-    file_id? : Number
+    attachment_id? : Number
 })
 ```
 <a name="do2"></a>
@@ -53,7 +54,7 @@ socket.emit('chat.start', {
 socket.emit('message.send', {
     room_id : Number,
     text : String,
-    file_id? : Number
+    attachment_id? : Number
 })
 ```
 <a name="do3"></a>
@@ -136,7 +137,8 @@ socket.on('on.user.authorized', ({
     dialogs : [
         { 
             chat : Chat, 
-            room : Room 
+            room : Room,
+            message : Message | null    
         }
     ],
     user : User | null
@@ -244,8 +246,7 @@ interface Chat{
 interface Room{
     id : Number,
     users : User[],
-    created_at : Date,
-    message : Message | null
+    created_at : Date
 }
 ```
 

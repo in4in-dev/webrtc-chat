@@ -1,13 +1,18 @@
-import {BelongsToManyGetAssociationsMixin, Model, Sequelize} from "sequelize";
+import {BelongsToManyGetAssociationsMixin, HasManyGetAssociationsMixin, Model, Sequelize} from "sequelize";
 import {DataTypes} from "sequelize";
 import {ChatModel} from "./Chat";
 import {Factory} from "../module/Factory";
+import {FileModel} from "./File";
 
 export class UserModel extends Model{
     public id! : number;
+    public token! : string;
 
     public chats? : ChatModel[];
     public getChats! : BelongsToManyGetAssociationsMixin<ChatModel>;
+
+    public files? : FileModel[];
+    public getFiles! : HasManyGetAssociationsMixin<FileModel>;
 
     public created_at! : Date;
     public updated_at! : Date;
@@ -31,6 +36,12 @@ export let UserFactory : Factory = {
                 primaryKey: true,
                 autoIncrement: true,
                 type: DataTypes.BIGINT
+            },
+            token : {
+                allowNull : true,
+                defaultValue : null,
+                type : DataTypes.STRING,
+                unique : true
             }
         }, {
             sequelize : db,
@@ -45,6 +56,7 @@ export let UserFactory : Factory = {
 
     relations() {
 
+        UserModel.hasMany(FileModel);
         UserModel.hasMany(ChatModel);
 
     }

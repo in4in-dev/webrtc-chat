@@ -2,7 +2,7 @@ import { Server } from "socket.io";
 import { createServer } from "http";
 
 import {connectDatabase} from "./db";
-import {Controller} from "./module/Controller";
+import {Controller} from "./socket/Controller";
 
 let server = createServer();
 let db = connectDatabase();

@@ -1,13 +1,16 @@
 import {DefaultResponse} from "./DefaultResponse";
-import {Chat, Message, Room, User} from "../models";
+import {User} from "../../models";
 
 export class AuthResponse extends DefaultResponse{
 
-    constructor(user : User | false, dialogs : any[] = []) {
+    constructor(user : User | null, dialogs : any[] = []) {
+
         super(!!user, {
             user,
+            token : user?.token,
             dialogs
         });
+
     }
 
 }

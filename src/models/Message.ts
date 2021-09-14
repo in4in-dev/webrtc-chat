@@ -64,6 +64,7 @@ export let MessageFactory : Factory = {
         }, {
             sequelize : db,
             modelName: 'message',
+            paranoid : true,
             underscored : true,
             timestamps : true,
             indexes : [
@@ -81,7 +82,7 @@ export let MessageFactory : Factory = {
 
         MessageModel.belongsTo(RoomModel);
         MessageModel.belongsTo(UserModel);
-        MessageModel.hasOne(AttachmentModel);
+        MessageModel.belongsTo(AttachmentModel);
 
     }
 

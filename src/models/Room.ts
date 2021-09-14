@@ -10,6 +10,7 @@ import {MessageModel} from "./Message";
 import {UserModel} from "./User";
 import {Factory} from "../module/Factory";
 import {ChatModel} from "./Chat";
+import {AttachmentModel} from "./Attachment";
 
 export class RoomModel extends Model {
     public id! : number;
@@ -22,6 +23,9 @@ export class RoomModel extends Model {
 
     public messages? : MessageModel[];
     public getMessages!: BelongsToManyGetAssociationsMixin<MessageModel>;
+
+    public attachments? : AttachmentModel[];
+    public getAttachments! : HasManyGetAssociationsMixin<AttachmentModel>;
 
     public created_at! : Date;
     public updated_at! : Date;
@@ -63,6 +67,7 @@ export let RoomFactory : Factory = {
         RoomModel.hasMany(MessageModel);
 
         RoomModel.hasMany(ChatModel);
+        RoomModel.hasMany(AttachmentModel);
 
         RoomModel.belongsToMany(UserModel, {
             through : ChatModel

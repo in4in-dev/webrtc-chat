@@ -2,6 +2,7 @@ import {BelongsToGetAssociationMixin, Model, Sequelize} from "sequelize";
 import {DataTypes} from "sequelize";
 import {UserModel} from "./User";
 import {Factory} from "../module/Factory";
+import {AttachmentModel} from "./Attachment";
 
 export class FileModel extends Model{
     public id! : number;

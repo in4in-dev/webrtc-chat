@@ -1,7 +1,6 @@
 import {Socket} from "socket.io";
 import {Attachment, Chat, File, Message, Room, User} from "../models";
 import {literal, Op} from "sequelize";
-import ServerActions from "../consts/ServerActions";
 
 interface ChatRoomDump{
     room : Room,
@@ -54,10 +53,7 @@ export class Client {
             let chat = chats[i];
 
             let room = await chat.getRoom({
-                include : [User, {
-                    model : Message,
-                    limit : 1
-                }],
+                include : User
             });
 
             result.push({ room, chat });
@@ -205,7 +201,7 @@ export class Client {
 
     }
 
-    public async sendMessage(room_id : number, text : string, file_id : number) : Promise<MessageDump|null>
+    public async sendMessage(room_id : number, text : string, attachment_id : number) : Promise<MessageDump|null>
     {
 
         let chat = await this.getChatByRoom(room_id);
@@ -214,16 +210,16 @@ export class Client {
             return null;
         }
 
-        return this.sendMessageToChat(chat, text, file_id);
+        return this.sendMessageToChat(chat, text, attachment_id);
 
     }
 
-    public async createChat(user_id : number, text : string, file_id : number) : Promise<MessageDump|null>
+    public async createChat(user_id : number, text : string, attachment_id : number) : Promise<MessageDump|null>
     {
 
         let receiver = await User.findByPk(user_id);
 
-        if(receiver){
+        if(receiver && receiver.id !== this.user.id){
 
             let rooms = await this.user.getChats({
                 attributes : ['room_id']
@@ -254,7 +250,7 @@ export class Client {
 
             }
 
-            return this.sendMessageToChat(chat, text, file_id);
+            return this.sendMessageToChat(chat, text, attachment_id);
 
         }
 
@@ -276,26 +272,25 @@ export class Client {
 
     }
 
-    protected async createAttachment(file_id : number, chat_id : number) : Promise<Attachment|null>{
+    protected async getAttachment(chat : Chat, attachment_id : number) : Promise<Attachment | null>
+    {
 
-        let file = await File.findByPk(file_id);
+        let attachment = await Attachment.findByPk(attachment_id);
 
-        if(file && file.user_id === this.user.id){
-
-            return await Attachment.create({
-                file_id : file.id,
-                chat_id : chat_id
-            })
-
+        if(attachment && attachment.room_id === chat.room_id){
+            return attachment;
         }
 
         return null;
 
     }
 
-    protected async sendMessageToChat(chat : Chat, text : string, file_id : number | null) : Promise<MessageDump>{
+    protected async sendMessageToChat(chat : Chat, text : string, attachment_id : number | null) : Promise<MessageDump>{
 
-        let attachment = file_id ? await this.createAttachment(file_id, chat.id) : null;
+        let attachment = null;
+        if(attachment_id){
+            attachment = await this.getAttachment(chat, attachment_id);
+        }
 
         await Chat.update({
             is_deleted : false,
@@ -321,7 +316,9 @@ export class Client {
             room_id : chat.room_id,
             user_id : this.user.id,
             text
-        }, {
+        });
+
+        await message.reload({
             include : Attachment
         });
 

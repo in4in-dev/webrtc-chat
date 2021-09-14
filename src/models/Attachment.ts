@@ -67,14 +67,14 @@ export let AttachmentFactory : Factory = {
         });
 
 
-        return FileModel;
+        return AttachmentModel;
 
     },
 
     relations(){
 
         AttachmentModel.belongsTo(RoomModel);
-        AttachmentModel.hasOne(FileModel);
+        AttachmentModel.belongsTo(FileModel);
 
     }
 

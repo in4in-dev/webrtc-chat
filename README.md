@@ -1,137 +1,146 @@
 # Чат (WebSocket + Express)
 
-- Подключение
-- Авторизация и получение списка диалогов
-- Новый диалог
-- Отправка сообщения
-- Удаление сообщения
-- Получить историю чата
-- Отметить чат прочитанным
-- Очистить историю чата
-- Удалить чат
-- Начать звонок (RTC)
-- Ответить на звонок (RTC)
-- События
+- [Подключение](#connect)
+- [Действия](#do)
+  - [Авторизация и получение списка диалогов](#do1)
+  - [Новый диалог](#do2)
+  - [Отправка сообщения](#do3)
+  - [Удаление сообщения](#do4)
+  - [Получить историю чата](#do5)
+  - [Отметить чат прочитанным](#do6)
+  - [Очистить историю чата](#do7)
+  - [Удалить чат](#do8)
+  - [Начать звонок (RTC)](#do9)
+  - [Ответить на звонок (RTC)](#do10)
+- [События](#events)
+- [Типы данных](#types)
 
+<a name="connect"></a>
 ## Подключение
-```javascript
+```typescript
 let socket = io('ws://localhost:3000', {
     path : '/',
     transports : ['websocket']
 });
 ```
 
+<a name="do"></a>
 ## Действия
 ### Авторизация и получение списка диалогов
 В ответ будет вызвано событие ```on.user.authorized```
-```javascript
+```typescript
 socket.emit('user.auth', {
     token : String
 })
 ```
-
+<a name="do1"></a>
 ### Новый диалог
 
 В ответ будет вызвано событие ```on.messages.new```
-```javascript
+```typescript
 socket.emit('chat.start', {
     user_id : Number,
     text : String,
     file_id? : Number
 })
 ```
-
+<a name="do2"></a>
 ### Отправка сообщения
 
 В ответ будет вызвано событие ```on.messages.new```
-```javascript
+```typescript
 socket.emit('message.send', {
     room_id : Number,
     text : String,
     file_id? : Number
 })
 ```
-
+<a name="do3"></a>
 ### Удаление сообщения
 
 В ответ будет вызвано событие ```on.messages.delete```
-```javascript
+```typescript
 socket.emit('message.delete', {
     message_id : Number
 })
 ```
-
+<a name="do4"></a>
 ### Получить историю чата
 
 В ответ будет вызвано событие ```on.chat.history```
-```javascript
+```typescript
 socket.emit('chat.history', {
     room_id : Number,
     limit? : Number,
     last_id? : Number
 })
 ```
-
+<a name="do5"></a>
 ### Отметить чат прочитанным
 
 В ответ будет вызвано событие ```on.chat.read```
-```javascript
+```typescript
 socket.emit('chat.read', {
     room_id : Number
 })
 ```
-
+<a name="do6"></a>
 ### Очистить историю чата
 
 В ответ будет вызвано событие ```on.chat.clear```
-```javascript
+```typescript
 socket.emit('chat.clear', {
     room_id : Number
 })
 ```
-
+<a name="do7"></a>
 ### Удалить чат
 
 В ответ будет вызвано событие ```on.chat.clear```
-```javascript
+```typescript
 socket.emit('chat.delete', {
     room_id : Number
 })
 ```
-
+<a name="do8"></a>
 ### Начать звонок
 
 В ответ будет вызвано событие ```on.call.init```
-```javascript
+```typescript
 socket.emit('call.start', {
     user_id : Number,
     ice_candidate : RTCIceCandidate,
     session_description : RTCSessionDescription
 })
 ```
-
+<a name="do9"></a>
 ### Ответить на звонок
 
 В ответ будет вызвано событие ```on.call.answer```
-```javascript
+```typescript
 socket.emit('call.answer', {
     user_id : Number,
     ice_candidate : RTCIceCandidate,
     session_description : RTCSessionDescription
 })
 ```
-
+<a name="events"></a>
 ## События
 ### Авторизация
-```javascript
+```typescript
 socket.on('on.user.authorized', ({
     success : Boolean,
-    dialogs : [{ chat : Chat, room : Room }],
+    dialogs : [
+        { 
+            chat : Chat, 
+            room : Room 
+        }
+    ],
     user : User | null
 }) => {})
 ```
 ### Новое сообщение
-```javascript
+```typescript
 socket.on('on.message.new', ({
     chat : Chat,
     room : Room,
@@ -139,7 +148,7 @@ socket.on('on.message.new', ({
 }) => {})
 ```
 ### Сообщение удалено
-```javascript
+```typescript
 socket.on('on.message.delete', ({
     chat : Chat,
     room : Room,
@@ -148,7 +157,7 @@ socket.on('on.message.delete', ({
 ```
 
 ### Чат удален
-```javascript
+```typescript
 socket.on('on.chat.delete', ({
     chat : Chat,
     room : Room
@@ -156,7 +165,7 @@ socket.on('on.chat.delete', ({
 ```
 
 ### Чат очищен
-```javascript
+```typescript
 socket.on('on.chat.clear', ({
     chat : Chat,
     room : Room
@@ -164,7 +173,7 @@ socket.on('on.chat.clear', ({
 ```
 
 ### Чат прочитан
-```javascript
+```typescript
 socket.on('on.chat.read', ({
     chat : Chat,
     room : Room
@@ -172,7 +181,7 @@ socket.on('on.chat.read', ({
 ```
 
 ### Входящий звонок (RTC)
-```javascript
+```typescript
 socket.on('on.call.init', ({
     user : User,
     ice_candidate : Object,
@@ -181,7 +190,7 @@ socket.on('on.call.init', ({
 ```
 
 ### Вызов принят (RTC)
-```javascript
+```typescript
 socket.on('on.call.answer', ({
     user : User,
     ice_candidate : Object,
@@ -190,7 +199,7 @@ socket.on('on.call.answer', ({
 ```
 
 ### Онлайн/оффлайн
-```javascript
+```typescript
 socket.on('on.user.online', ({
     id : Number,
     online : Boolean
@@ -198,10 +207,64 @@ socket.on('on.user.online', ({
 ```
 
 ### История чата загружена
-```javascript
+```typescript
 socket.on('on.chat.history', ({
     messages : Message[],
     chat : Chat,
     room : Room
 }) => {})
+```
+<a name="types"></a>
+## Типы данных
+
+### Chat
+```typescript
+interface Chat{
+    user_id : Number,
+    unread_count : Number,
+    created_at : Date,
+    updated_at : Date
+}
+```
+
+### Room
+```typescript
+interface Room{
+    id : Number,
+    users : User[],
+    created_at : Date,
+    message : Message | null
+}
+```
+
+### Message
+```typescript
+interface Message{
+    id: Number,
+    room_id : Number,
+    user_id : Number,
+    created_at : Date,
+    updated_at : Date,
+    text : String,
+    attachment : Attachment | null 
+}
+```
+
+### Attachment
+```typescript
+interface Attachment{
+    id : Number,
+    type : String,
+    file_id : Number,
+    room_id : Number,
+    created_at : Date
+}
+```
+
+### User
+```typescript
+interface User{
+    id : Number,
+    created_at : Date
+}
 ```

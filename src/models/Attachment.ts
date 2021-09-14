@@ -23,9 +23,9 @@ export class AttachmentModel extends Model{
 
     public toJSON(): object {
 
-        let {id, file_id, created_at, updated_at, room_id} = this;
+        let {id, type, file_id, created_at, room_id} = this;
 
-        return {id, file_id, created_at, updated_at, room_id};
+        return {id, type, file_id, created_at, room_id};
 
     }
 

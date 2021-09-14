@@ -36,7 +36,7 @@ socket.emit('user.auth', {
 <a name="do1"></a>
 ### Новый диалог
 
-В ответ у обеих сторон будет вызвано событие ```on.messages.new```
+В ответ у обеих сторон будет вызвано событие ```on.message.new```
 ```typescript
 socket.emit('chat.start', {
     user_id : Number,
@@ -47,7 +47,7 @@ socket.emit('chat.start', {
 <a name="do2"></a>
 ### Отправка сообщения
 
-В ответ у обеих сторон будет вызвано событие ```on.messages.new```
+В ответ у обеих сторон будет вызвано событие ```on.message.new```
 ```typescript
 socket.emit('message.send', {
     room_id : Number,
@@ -58,7 +58,7 @@ socket.emit('message.send', {
 <a name="do3"></a>
 ### Удаление сообщения
 
-В ответ у обеих сторон будет вызвано событие ```on.messages.delete```
+В ответ у обеих сторон будет вызвано событие ```on.message.delete```
 ```typescript
 socket.emit('message.delete', {
     message_id : Number

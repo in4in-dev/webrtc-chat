@@ -26,7 +26,7 @@ let socket = io('ws://localhost:3000', {
 
 <a name="do"></a>
 ## Действия
-<a name="do0"></a
+<a name="do0"></a>
 ### Авторизация и получение списка диалогов
 В ответ у вас будет вызвано событие ```on.user.authorized```
 ```typescript

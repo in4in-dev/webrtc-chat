@@ -14,6 +14,7 @@
   - [Ответить на звонок (RTC)](#do9)
 - [События](#events)
 - [Типы данных](#types)
+- [Файлы](#files)
 
 <a name="connect"></a>
 ## Подключение
@@ -289,4 +290,55 @@ interface File{
     user_id : Number,
     created_at : Date
 }
+```
+
+## Файлы
+
+### Загрузка файлов на сервер
+
+```
+POST 
+Content-type: multipart/form-data
+
+https://localhost:3001/upload/
+```
+
+#### Обязательные POST-параметры:
+
+```file``` - загружаемый файл
+
+#### Обязательные GET-параметры:
+
+```
+room_id : Number
+user_id : Number
+token : String
+type : String
+```
+
+Внимание: ``type`` может быть одним из четырех значений - ``voice``, ``video``, ``photo``, ``file``
+
+
+#### Пример ответа
+```json
+{
+  "success" : true,
+  "attachment" : Attachment
+}
+```
+
+### Получение файла
+
+```
+GET
+
+https://localhost:3001/download/
+```
+
+#### Обязательные GET-параметры:
+
+```
+attachment_id : Number
+user_id : Number
+token : String
 ```

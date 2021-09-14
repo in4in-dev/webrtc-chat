@@ -26,11 +26,11 @@ export default class Controller{
             next();
         });
 
-        app.get('/download/:user_id/:token/:attachment_id/', async (req : Request, res : Response) => {
+        app.get('/download', async (req : Request, res : Response) => {
 
-            let user_id       = +req.params.user_id,
-                attachment_id = +req.params.attachment_id,
-                token         = String(req.params.token) || '';
+            let user_id       = +req.query.user_id!,
+                attachment_id = +req.query.attachment_id!,
+                token         = String(req.query.token) || '';
 
             if(user_id && attachment_id && token &&
                 await this.checkAuth(user_id, token)
@@ -53,7 +53,7 @@ export default class Controller{
 
         });
 
-        app.post('/upload/', async (req : Request, res : Response) => {
+        app.post('/upload', async (req : Request, res : Response) => {
 
             let file = req.files?.file;
 

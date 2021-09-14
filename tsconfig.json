@@ -1,7 +1,6 @@
 {
   "include": [
-    "./src/**/*",
-    "./.env"
+    "./src/**/*"
   ],
   "compilerOptions": {
     "watch": true,

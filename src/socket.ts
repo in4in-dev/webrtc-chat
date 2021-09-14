@@ -1,8 +1,12 @@
+import * as dotenv from 'dotenv';
 import { Server } from "socket.io";
 import { createServer } from "http";
 
 import {connectDatabase} from "./db";
 import {Controller} from "./socket/Controller";
+import {Env} from "./module/Env";
+
+dotenv.config();
 
 let server = createServer();
 let db = connectDatabase();
@@ -20,4 +24,6 @@ let controller = new Controller(socket);
 
 console.log('Socket started');
 
-server.listen(3000);
+server.listen(
+    Env.get('SOCKET_PORT')
+);

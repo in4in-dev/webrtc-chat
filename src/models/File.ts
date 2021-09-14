@@ -14,6 +14,14 @@ export class FileModel extends Model{
     public created_at! : Date;
     public updated_at! : Date;
 
+    public toJSON(): object {
+
+        let {id, user_id, created_at} = this;
+
+        return { id, user_id, created_at }
+
+    }
+
 }
 
 export let FileFactory : Factory = {

@@ -6,6 +6,7 @@ import {UserModel} from "./User";
 export class CallModel extends Model{
 
     public id! : number;
+    public status! : string;
 
     public caller_id! : number;
     public caller? : UserModel;
@@ -45,6 +46,13 @@ export let CallFactory : Factory = {
             caller_id : {
                 type : DataTypes.BIGINT,
                 allowNull: false
+            },
+            status : {
+                defaultValue : 'new',
+                allowNull : false,
+                type : DataTypes.ENUM({
+                    values : ['new', 'confirmed']
+                })
             }
         }, {
             sequelize : db,

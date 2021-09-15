@@ -163,7 +163,10 @@ export class Controller{
 
                 let call = await Call.findByPk(data.call_id);
 
-                if(call && call.receiver_id === user.id){
+                if(call && call.receiver_id === user.id && call.status === 'new'){
+
+                    call.status = 'confirmed';
+                    await call.save();
 
                     this.emitByUser(call.caller_id, ServerActions.CALL_ANSWER, client => {
                         return new CallResponse(user, call!, data.session_description);

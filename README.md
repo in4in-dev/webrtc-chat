@@ -319,7 +319,8 @@ interface Call{
     id : Number,
     receiver_id : Number,
     caller_id : Number,
-    created_at : Date
+    created_at : Date,
+    status : String
 }
 ```
 

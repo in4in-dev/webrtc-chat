@@ -12,6 +12,7 @@
   - [Удалить чат](#do7)
   - [Начать звонок (RTC)](#do8)
   - [Ответить на звонок (RTC)](#do9)
+  - [Передать Ice Candidate (RTC)](#do10)
 - [События](#events)
 - [Типы данных](#types)
 - [Файлы](#files)
@@ -106,27 +107,37 @@ socket.emit('chat.delete', {
 })
 ```
 <a name="do8"></a>
-### Начать звонок
+### Начать звонок (RTC)
 
-В ответ у собеседника будет вызвано событие ```on.call.init```
+В ответ у собеседника будет вызвано событие ```on.call.start```
 ```typescript
 socket.emit('call.start', {
     user_id : Number,
-    ice_candidate : RTCIceCandidate,
     session_description : RTCSessionDescription
 })
 ```
 <a name="do9"></a>
-### Ответить на звонок
+### Ответить на звонок (RTC)
 
 В ответ у собседеника будет вызвано событие ```on.call.answer```
 ```typescript
 socket.emit('call.answer', {
-    user_id : Number,
-    ice_candidate : RTCIceCandidate,
+    call_id : Number,
     session_description : RTCSessionDescription
 })
 ```
+
+<a name="do10"></a>
+### Передать Ice Candidate (RTC)
+
+В ответ у собседеника будет вызвано событие ```on.call.ice```
+```typescript
+socket.emit('call.ice', {
+    call_id : Number,
+    ice_candidate : RTCIceCandidate
+})
+```
+
 <a name="events"></a>
 ## События
 
@@ -194,9 +205,9 @@ socket.on('on.chat.read', ({
 ### Входящий звонок (RTC)
 Вызывается при входящем звонке, когда собеседник использовал ```call.start```
 ```typescript
-socket.on('on.call.init', ({
+socket.on('on.call.start', ({
     user : User,
-    ice_candidate : Object,
+    call : Call,    
     session_description : Object
 }) => {})
 ```
@@ -206,8 +217,17 @@ socket.on('on.call.init', ({
 ```typescript
 socket.on('on.call.answer', ({
     user : User,
-    ice_candidate : Object,
+    call : Call,    
     session_description : Object
+}) => {})
+```
+
+### Передача ICE Candidate (RTC)
+Вызывается при новом ice_candidate, когда собеседник использовал ```call.ice```
+```typescript
+socket.on('on.call.ice', ({
+    call : Call,    
+    ice_candidate : Object
 }) => {})
 ```
 
@@ -288,6 +308,17 @@ interface User{
 interface File{
     id : Number,
     user_id : Number,
+    created_at : Date
+}
+```
+
+
+### Call
+```typescript
+interface Call{
+    id : Number,
+    receiver_id : Number,
+    caller_id : Number,
     created_at : Date
 }
 ```

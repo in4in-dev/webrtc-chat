@@ -2,7 +2,7 @@ import {Server, Socket} from "socket.io";
 import {ClientStore} from "./ClientStore";
 import {Client} from "./Client";
 import ClientActions from "../consts/ClientActions";
-import {Attachment, File, Message, Room, User, Chat} from "../models";
+import {Attachment, File, Message, Room, User, Chat, Call} from "../models";
 import ServerActions from "../consts/ServerActions";
 import {OnlineResponse} from "./responses/OnlineResponse";
 import {literal, Op} from "sequelize";
@@ -14,6 +14,7 @@ import {AuthResponse} from "./responses/AuthResponse";
 import {CallResponse} from "./responses/CallResponse";
 import {DefaultResponse} from "./responses/DefaultResponse";
 import {ErrorResponse} from "./responses/ErrorResponse";
+import {CallIceResponse} from "./responses/CallIceResponse";
 
 export class Controller{
 
@@ -79,15 +80,47 @@ export class Controller{
             this.onDisconnect(client);
         });
 
+        //ICE_CANDIDATE для звонков
+        connection.on(ClientActions.CALL_ICE, async (request) => {
+
+            let data = <any>new Validator({
+                'call_id' : new Field('number'),
+                'ice_candidate' : new Field('*')
+            }).validate(request);
+
+            if(data){
+
+                let call = await Call.findByPk(data.call_id);
+
+                if(call){
+
+                    if(call.receiver_id === user.id){
+
+                        this.emitByUser(call.caller_id, ServerActions.CALL_ICE, client => {
+                            return new CallIceResponse(call!, data.ice_candidate);
+                        });
+
+                    }else if(call.caller_id === user.id){
+
+                        this.emitByUser(call.receiver_id, ServerActions.CALL_ICE, client => {
+                            return new CallIceResponse(call!, data.ice_candidate);
+                        });
+
+                    }
+
+                }
+
+            }
+
+        });
+
         //Звонок
         connection.on(ClientActions.CALL_INIT, async (request) => {
 
             let data = <any>new Validator({
                 'user_id' : new Field('number'),
-                'ice_candidate' : new Field('*'),
                 'session_description' : new Field('*')
             }).validate(request);
-
 
             if(data){
 
@@ -95,8 +128,13 @@ export class Controller{
 
                 if(target){
 
+                    let call = await Call.create({
+                        caller_id : user.id,
+                        receiver_id : target.id
+                    });
+
                     this.emitByUser(target.id, ServerActions.CALL_INIT, client => {
-                        return new CallResponse(user, data.ice_candidate, data.session_description);
+                        return new CallResponse(user, call, data.session_description);
                     })
 
                 }else{
@@ -117,19 +155,18 @@ export class Controller{
         connection.on(ClientActions.CALL_ANSWER, async (request) => {
 
             let data = <any>new Validator({
-                'user_id' : new Field('number'),
-                'ice_candidate' : new Field('*'),
+                'call_id' : new Field('number'),
                 'session_description' : new Field('*')
             }).validate(request);
 
             if(data){
 
-                let target = await User.findByPk(data.user_id);
+                let call = await Call.findByPk(data.call_id);
 
-                if(target){
+                if(call && call.receiver_id === user.id){
 
-                    this.emitByUser(target.id, ServerActions.CALL_ANSWER, client => {
-                        return new CallResponse(user, data.ice_candidate, data.session_description);
+                    this.emitByUser(call.caller_id, ServerActions.CALL_ANSWER, client => {
+                        return new CallResponse(user, call!, data.session_description);
                     })
 
                 }else{

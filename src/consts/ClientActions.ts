@@ -14,6 +14,7 @@ export default {
     GET_HISTORY : 'chat.history',
 
     CALL_INIT : 'call.start',
-    CALL_ANSWER : 'call.answer'
+    CALL_ANSWER : 'call.answer',
+    CALL_ICE : 'call.ice'
 
 }

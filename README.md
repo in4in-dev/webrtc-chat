@@ -100,7 +100,7 @@ socket.emit('chat.clear', {
 <a name="do7"></a>
 ### Удалить чат
 
-В ответ у вас будет вызвано событие ```on.chat.clear```
+В ответ у обеих сторон будет вызвано событие ```on.chat.delete```
 ```typescript
 socket.emit('chat.delete', {
     room_id : Number

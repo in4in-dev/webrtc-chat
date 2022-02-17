@@ -19,6 +19,8 @@ export default {
     CALL_ANSWER : 'on.call.answer',
     CALL_ICE : 'on.call.ice',
 
-    ERROR : 'on.error'
+    ERROR : 'on.error',
+
+    DO_SOMETHING : 'on.chat.do_something'
 
 }

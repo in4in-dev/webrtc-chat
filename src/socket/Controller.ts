@@ -195,13 +195,47 @@ export class Controller{
                 'attachment_id' : new Field('number', false, null)
             }).validate(request);
 
-            if(data){
+            if(data && (data.text.length || data.attachment_id)){
 
                 let response = await client.createChat(data.user_id, data.text, data.attachment_id);
 
                 response && this.emitInChats(response.chats, ServerActions.NEW_MESSAGE, (chat) => {
                     return new MessageResponse(response!.message, chat, response!.room);
                 });
+
+            }else{
+
+                connection.emit(ServerActions.ERROR, new ErrorResponse('Bad data'));
+
+            }
+
+        });
+
+        //Уведомление о действии
+        connection.on(ClientActions.I_DO_SOMETHING, async (request) => {
+
+            let data = new Validator({
+                'room_id' : new Field('number'),
+                'action' : new Field('string', true),
+            }).validate(request);
+
+            if(data){
+
+                let {room_id, action} = data;
+
+                if(await client.getChatByRoom(room_id)){
+
+                    let chats = await client.getChatPartners(room_id);
+
+                    this.emitInChats(chats, ServerActions.DO_SOMETHING, (chat) => {
+                        return new DefaultResponse(true, { chat, action });
+                    });
+
+                }else{
+
+                    connection.emit(ServerActions.ERROR, new ErrorResponse('Bad room_id'));
+
+                }
 
             }else{
 
@@ -220,7 +254,7 @@ export class Controller{
                 'attachment_id' : new Field('number', false, null)
             }).validate(request);
 
-            if(data){
+            if(data && (data.text.length || data.attachment_id)){
 
                 let response = await client.sendMessage(data.room_id, data.text, data.attachment_id);
 

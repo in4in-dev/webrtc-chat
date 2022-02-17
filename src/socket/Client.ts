@@ -258,7 +258,7 @@ export class Client {
 
     }
 
-    protected async getChatByRoom(room_id : number, { where = {}, ...options } : any = {}) : Promise<Chat | null>
+    public async getChatByRoom(room_id : number, { where = {}, ...options } : any = {}) : Promise<Chat | null>
     {
 
         return Chat.findOne({
@@ -283,6 +283,18 @@ export class Client {
 
         return null;
 
+    }
+
+    public async getChatPartners(room_id : number) : Promise<Chat[]>
+    {
+        return Chat.findAll({
+            where : {
+                user_id : {
+                    [Op.not] : this.user.id
+                },
+                room_id
+            }
+        });
     }
 
     protected async sendMessageToChat(chat : Chat, text : string, attachment_id : number | null) : Promise<MessageDump>{

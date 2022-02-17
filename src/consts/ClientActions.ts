@@ -15,6 +15,8 @@ export default {
 
     CALL_INIT : 'call.start',
     CALL_ANSWER : 'call.answer',
-    CALL_ICE : 'call.ice'
+    CALL_ICE : 'call.ice',
+
+    I_DO_SOMETHING : 'chat.i_do',
 
 }

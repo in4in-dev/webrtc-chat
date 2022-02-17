@@ -228,7 +228,7 @@ export class Controller{
                     let chats = await client.getChatPartners(room_id);
 
                     this.emitInChats(chats, ServerActions.DO_SOMETHING, (chat) => {
-                        return new DefaultResponse(true, { chat, action });
+                        return new DefaultResponse(true, { chat, action, user });
                     });
 
                 }else{
@@ -251,12 +251,13 @@ export class Controller{
             let data = new Validator({
                 'room_id' : new Field('number'),
                 'text'    : new Field('string', false, ''),
-                'attachment_id' : new Field('number', false, null)
+                'attachment_id' : new Field('number', false, null),
+                'answer_message_id' : new Field('number', false, null)
             }).validate(request);
 
             if(data && (data.text.length || data.attachment_id)){
 
-                let response = await client.sendMessage(data.room_id, data.text, data.attachment_id);
+                let response = await client.sendMessage(data.room_id, data.text, data.attachment_id, data.answer_message_id);
 
                 response && this.emitInChats(response.chats, ServerActions.NEW_MESSAGE, (chat) => {
                     return new MessageResponse(response!.message, chat, response!.room);

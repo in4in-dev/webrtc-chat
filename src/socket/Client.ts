@@ -201,7 +201,7 @@ export class Client {
 
     }
 
-    public async sendMessage(room_id : number, text : string, attachment_id : number) : Promise<MessageDump|null>
+    public async sendMessage(room_id : number, text : string, attachment_id : null | number = null, answer_message_id : number | null = null) : Promise<MessageDump|null>
     {
 
         let chat = await this.getChatByRoom(room_id);
@@ -210,11 +210,11 @@ export class Client {
             return null;
         }
 
-        return this.sendMessageToChat(chat, text, attachment_id);
+        return this.sendMessageToChat(chat, text, attachment_id, answer_message_id);
 
     }
 
-    public async createChat(user_id : number, text : string, attachment_id : number) : Promise<MessageDump|null>
+    public async createChat(user_id : number, text : string, attachment_id : null | number = null) : Promise<MessageDump|null>
     {
 
         let receiver = await User.findByPk(user_id);
@@ -297,11 +297,22 @@ export class Client {
         });
     }
 
-    protected async sendMessageToChat(chat : Chat, text : string, attachment_id : number | null) : Promise<MessageDump>{
+    protected async sendMessageToChat(chat : Chat, text : string, attachment_id : number | null = null, answer_message_id : number | null = null) : Promise<MessageDump>{
 
         let attachment = null;
         if(attachment_id){
             attachment = await this.getAttachment(chat, attachment_id);
+        }
+
+        let answerMessage = null;
+        if(answer_message_id){
+
+            answerMessage = await Message.findByPk(answer_message_id);
+
+            if(answerMessage && answerMessage.room_id !== chat.room_id){
+                answerMessage = null;
+            }
+
         }
 
         await Chat.update({
@@ -327,11 +338,15 @@ export class Client {
             attachment_id : attachment?.id,
             room_id : chat.room_id,
             user_id : this.user.id,
+            answer_message_id : answerMessage ? answerMessage.id : null,
             text
         });
 
         await message.reload({
-            include : Attachment
+            include : [Attachment, {
+                model : Message,
+                as : 'answer_message'
+            }]
         });
 
         let chats = await room.getChats();

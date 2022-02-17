@@ -77,11 +77,15 @@ export let CallFactory : Factory = {
     relations(){
 
         CallModel.belongsTo(UserModel, {
-            foreignKey : 'receiver_id'
+            foreignKey : 'receiver_id',
+            as : 'receiver',
+            onDelete : 'CASCADE'
         });
 
         CallModel.belongsTo(UserModel, {
-            foreignKey : 'caller_id'
+            foreignKey : 'caller_id',
+            as : 'caller',
+            onDelete : 'CASCADE'
         });
 
     }

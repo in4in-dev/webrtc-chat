@@ -70,7 +70,8 @@ export let RoomFactory : Factory = {
         RoomModel.hasMany(AttachmentModel);
 
         RoomModel.belongsToMany(UserModel, {
-            through : ChatModel
+            through : ChatModel,
+            onDelete : 'CASCADE'
         });
 
     }

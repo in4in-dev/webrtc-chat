@@ -57,7 +57,9 @@ export let FileFactory : Factory = {
 
     relations(){
 
-        FileModel.belongsTo(UserModel);
+        FileModel.belongsTo(UserModel, {
+            onDelete : 'CASCADE'
+        });
 
     }
 

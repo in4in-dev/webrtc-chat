@@ -90,12 +90,19 @@ export let MessageFactory : Factory = {
 
     relations(){
 
-        MessageModel.belongsTo(RoomModel);
-        MessageModel.belongsTo(UserModel);
-        MessageModel.belongsTo(AttachmentModel);
+        MessageModel.belongsTo(RoomModel, {
+            onDelete : 'CASCADE'
+        });
+        MessageModel.belongsTo(UserModel, {
+            onDelete : 'CASCADE'
+        });
+        MessageModel.belongsTo(AttachmentModel, {
+            onDelete : 'SET NULL'
+        });
         MessageModel.belongsTo(MessageModel, {
             foreignKey : 'answer_message_id',
-            as : 'answer_message'
+            as : 'answer_message',
+            onDelete : 'SET NULL'
         });
 
     }

@@ -96,8 +96,12 @@ export let ChatFactory : Factory = {
 
     relations(){
 
-        ChatModel.belongsTo(RoomModel);
-        ChatModel.belongsTo(UserModel);
+        ChatModel.belongsTo(RoomModel, {
+            onDelete : 'CASCADE'
+        });
+        ChatModel.belongsTo(UserModel, {
+            onDelete : 'CASCADE'
+        });
 
     }
 

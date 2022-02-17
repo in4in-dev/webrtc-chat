@@ -73,8 +73,13 @@ export let AttachmentFactory : Factory = {
 
     relations(){
 
-        AttachmentModel.belongsTo(RoomModel);
-        AttachmentModel.belongsTo(FileModel);
+        AttachmentModel.belongsTo(RoomModel, {
+            onDelete : 'CASCADE'
+        });
+
+        AttachmentModel.belongsTo(FileModel, {
+            onDelete : 'CASCADE'
+        });
 
     }
 

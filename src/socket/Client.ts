@@ -1,6 +1,7 @@
 import {Socket} from "socket.io";
 import {Attachment, Chat, File, Message, Room, User} from "../models";
 import {literal, Op} from "sequelize";
+import {MessageModel} from "../models/Message";
 
 interface ChatRoomDump{
     room : Room,
@@ -119,7 +120,13 @@ export class Client {
             order : [
                 ['id', 'DESC']
             ],
-            include : Attachment,
+            include : [
+                Attachment,
+                {
+                    model : Message,
+                    as : 'answer_message'
+                }
+            ],
             limit
         });
 
@@ -343,10 +350,13 @@ export class Client {
         });
 
         await message.reload({
-            include : [Attachment, {
-                model : Message,
-                as : 'answer_message'
-            }]
+            include : [
+                Attachment,
+                {
+                    model : Message,
+                    as : 'answer_message'
+                }
+            ]
         });
 
         let chats = await room.getChats();
